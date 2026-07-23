@@ -410,9 +410,15 @@
     /* Action Buttons Grid */
     .actions-grid {
       display: grid;
-      grid-template-columns: auto auto 1fr 1fr;
+      grid-template-columns: 1fr 1fr;
       gap: 8px;
       margin-bottom: 12px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .btn-action-half {
+      width: 100%;
     }
 
     .btn {
@@ -702,21 +708,18 @@
       cursor: pointer;
     }
 
-    @media (max-width: 600px) {
-      .settings-grid { grid-template-columns: 1fr; }
+    @media (max-width: 640px) {
+      .app-container { padding: 10px 8px 32px; }
+      .game-board { padding: 14px 12px 16px; }
+      .settings-grid { grid-template-columns: 1fr !important; }
+      .form-group[style*="grid-column"] { grid-column: span 1 !important; }
       .stats-row { grid-template-columns: repeat(2, 1fr); }
       .keypad-grid { grid-template-columns: repeat(4, 1fr); }
       .actions-grid { grid-template-columns: 1fr 1fr; }
-      .btn-next { grid-column: span 2; }
+      .btn-next { grid-column: span 2 !important; }
     }
 
-    .actions-grid.calc-actions-grid {
-      grid-template-columns: 1fr 1fr !important;
-    }
 
-    .actions-grid.calc-actions-grid .btn-next {
-      grid-column: span 2 !important;
-    }
 
     /* BOSS STATUS SECTION */
     .boss-section {
@@ -954,11 +957,13 @@
 
       <!-- Action Buttons Grid -->
       <div class="actions-grid">
-        <button class="btn btn-icon" id="backspaceBtn" title="ลบตัวหลังสุด">
+        <button class="btn btn-action-half" id="backspaceBtn" title="ลบตัวหลังสุด">
           <svg viewBox="0 0 24 24"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zM18 9l-6 6M12 9l6 6"/></svg>
+          ลบตัวหลัง
         </button>
-        <button class="btn btn-icon" id="clearBtn" title="ล้างทั้งหมด">
+        <button class="btn btn-action-half" id="clearBtn" title="ล้างกระดาน">
           <svg viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          ล้างกระดาน
         </button>
         <button class="btn btn-orange" id="solveBtn">
           <svg viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 0 1-2 2h-0a2 2 0 0 1-2-2v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
@@ -1170,14 +1175,12 @@
         this.game.mode = mode;
         const backspaceBtn = document.getElementById('backspaceBtn');
         const clearBtn = document.getElementById('clearBtn');
-        const actionsGrid = document.querySelector('.actions-grid');
 
         if (mode === 'calc') {
           this.cardContainer.style.display = 'none';
           this.calcContainer.style.display = 'block';
           if (backspaceBtn) backspaceBtn.style.display = 'none';
           if (clearBtn) clearBtn.style.display = 'none';
-          if (actionsGrid) actionsGrid.classList.add('calc-actions-grid');
           this.icon.textContent = '🎴';
           this.label.textContent = 'CARDS';
         } else {
@@ -1185,7 +1188,6 @@
           this.calcContainer.style.display = 'none';
           if (backspaceBtn) backspaceBtn.style.display = 'inline-flex';
           if (clearBtn) clearBtn.style.display = 'inline-flex';
-          if (actionsGrid) actionsGrid.classList.remove('calc-actions-grid');
           this.icon.textContent = '🧮';
           this.label.textContent = 'CALC';
         }
