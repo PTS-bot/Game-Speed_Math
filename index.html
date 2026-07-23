@@ -1,0 +1,1682 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>เกมคิดเลขเร็ว — Speed Math Mobile & Web</title>
+  
+  <!-- Google Fonts: Space Grotesk, Newsreader, JetBrains Mono, IBM Plex Sans Thai -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Newsreader:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* LIGHT MODE DESIGN TOKENS */
+    :root {
+      --paper: #F5EEDC;
+      --paper-warm: #EDE3C9;
+      --paper-light: #FAF5E8;
+      --paper-white: #FCF9EF;
+      --ink: #0B2545;
+      --ink-2: #1A3A5C;
+      --ink-soft: rgba(11, 37, 69, 0.65);
+      --ink-faint: rgba(11, 37, 69, 0.35);
+      --ink-trace: rgba(11, 37, 69, 0.12);
+      
+      --orange: #D75C2A;
+      --orange-deep: #A8421A;
+      --orange-soft: rgba(215, 92, 42, 0.16);
+
+      --green: #2A7553;
+      --green-deep: #1F5840;
+      --green-soft: rgba(42, 117, 83, 0.16);
+
+      --danger: #C0392B;
+      --danger-soft: rgba(192, 57, 43, 0.15);
+
+      --grid-minor: rgba(11, 37, 69, 0.075);
+
+      --font-display: 'Space Grotesk', sans-serif;
+      --font-serif: 'Newsreader', Georgia, serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-thai: 'IBM Plex Sans Thai', sans-serif;
+    }
+
+    /* DARK MODE OVERRIDES */
+    body.dark-mode {
+      --paper: #0B132B;
+      --paper-warm: #1C2541;
+      --paper-light: #162032;
+      --paper-white: #1E293B;
+      --ink: #F8FAFC;
+      --ink-2: #E2E8F0;
+      --ink-soft: rgba(248, 250, 252, 0.7);
+      --ink-faint: rgba(248, 250, 252, 0.35);
+      --ink-trace: rgba(248, 250, 252, 0.12);
+      
+      --orange: #F97316;
+      --orange-deep: #FB923C;
+      --orange-soft: rgba(249, 115, 22, 0.2);
+
+      --green: #10B981;
+      --green-deep: #34D399;
+      --green-soft: rgba(16, 185, 129, 0.2);
+
+      --danger: #EF4444;
+      --danger-soft: rgba(239, 68, 68, 0.2);
+
+      --grid-minor: rgba(255, 255, 255, 0.05);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    /* Allow text input selection inside form inputs */
+    input, textarea {
+      user-select: auto !important;
+      -webkit-user-select: auto !important;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--paper);
+      color: var(--ink);
+      font-family: var(--font-thai);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      touch-action: manipulation;
+    }
+
+    /* Paper Grid Overlay */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(var(--grid-minor) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-minor) 1px, transparent 1px);
+      background-size: 24px 24px;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.7;
+    }
+
+    .app-container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 660px;
+      margin: 0 auto;
+      padding: 16px 12px 36px;
+    }
+
+    /* MAIN GAME CARD FRAME */
+    .game-board {
+      background: var(--paper-white);
+      border: 1px solid var(--ink);
+      box-shadow: 4px 4px 0px rgba(11, 37, 69, 0.12);
+      padding: 18px 16px 20px;
+      margin-bottom: 16px;
+      position: relative;
+    }
+
+    /* Header Row (Brand Tag + Theme Toggle Button) */
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .corner-brand {
+      font-family: var(--font-display);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--ink-soft);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+    }
+
+    .corner-brand .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--orange);
+    }
+
+    /* Theme Toggle Button */
+    .theme-toggle-btn {
+      font-family: var(--font-display);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-weight: 700;
+      padding: 4px 10px;
+      border: 1px solid var(--ink);
+      background: var(--paper-warm);
+      color: var(--ink);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s ease;
+      touch-action: manipulation;
+    }
+
+    .theme-toggle-btn:hover {
+      background: var(--ink);
+      color: var(--paper-white);
+    }
+
+    /* Target Section */
+    .target-section {
+      text-align: center;
+      margin-top: 6px;
+      margin-bottom: 16px;
+    }
+
+    .target-label {
+      font-family: var(--font-display);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--ink-soft);
+      margin-bottom: 4px;
+    }
+
+    .target-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--paper);
+      border: 2px solid var(--ink);
+      padding: 4px 24px;
+      box-shadow: 2px 2px 0px var(--ink);
+    }
+
+    .target-number {
+      font-family: var(--font-mono);
+      font-size: 3.2rem;
+      font-weight: 700;
+      color: var(--orange-deep);
+      line-height: 1;
+    }
+
+    /* Keypad Section (OPERATORS ONLY) */
+    .keypad-section {
+      margin-bottom: 14px;
+    }
+
+    .keypad-grid {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 6px;
+    }
+
+    .op-btn {
+      background: var(--paper-white);
+      border: 1px solid var(--ink);
+      height: 44px;
+      font-family: var(--font-mono);
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--ink);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+      touch-action: none;
+    }
+
+    .op-btn:active {
+      background: var(--ink);
+      color: var(--paper-white);
+    }
+
+    /* Workspace Zone */
+    .workspace-section {
+      margin-bottom: 14px;
+    }
+
+    .workspace-dropzone {
+      background: var(--paper-light);
+      border: 1px dashed var(--ink);
+      padding: 10px 10px;
+      min-height: 64px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .workspace-dropzone.drag-over {
+      border-style: solid;
+      border-color: var(--orange);
+      background: var(--orange-soft);
+    }
+
+    /* Draggable Tile Chips */
+    .tile {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--paper-white);
+      border: 1px solid var(--ink);
+      border-radius: 2px;
+      height: 44px;
+      padding: 0 14px;
+      font-family: var(--font-mono);
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--ink);
+      cursor: grab;
+      touch-action: none;
+      box-shadow: 2px 2px 0px var(--ink-faint);
+      transition: transform 0.15s ease, opacity 0.15s;
+    }
+
+    .tile.tile-op {
+      background: var(--ink);
+      color: var(--paper-white);
+      border-color: var(--ink);
+    }
+
+    .tile.dragging {
+      opacity: 0.25;
+      transform: scale(0.92);
+    }
+
+    /* Floating Touch Drag Proxy */
+    .drag-proxy {
+      position: fixed;
+      z-index: 9999;
+      pointer-events: none;
+      opacity: 0.85;
+      transform: translate(-50%, -50%) scale(1.1);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Insertion Ghost Placeholder */
+    .drop-ghost {
+      height: 44px;
+      width: 34px;
+      border: 2px dashed var(--orange);
+      background: var(--orange-soft);
+      opacity: 0.7;
+      animation: pulseGhost 0.8s infinite alternate;
+      pointer-events: none;
+    }
+
+    @keyframes pulseGhost {
+      from { opacity: 0.4; }
+      to { opacity: 0.85; }
+    }
+
+    .tile.shift-right {
+      transform: translateX(10px);
+    }
+
+    /* Unused Numbers Bar */
+    .unused-numbers-section {
+      margin-top: 10px;
+    }
+
+    .unused-numbers-flex {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .unused-card {
+      background: var(--paper-warm);
+      border: 1px solid var(--ink-faint);
+      height: 44px;
+      min-width: 44px;
+      padding: 0 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--ink);
+      cursor: pointer;
+      touch-action: none;
+      transition: all 0.15s;
+    }
+
+    .unused-card:hover, .unused-card:active {
+      background: var(--ink);
+      color: var(--paper);
+      border-color: var(--ink);
+    }
+
+    /* Plain Text Expression Display */
+    .text-result-section {
+      text-align: center;
+      margin-bottom: 16px;
+      padding: 8px 10px;
+      border-top: 1px dashed var(--ink-faint);
+      border-bottom: 1px dashed var(--ink-faint);
+    }
+
+    .formatted-expression-text {
+      font-family: var(--font-mono);
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: var(--ink);
+      word-break: break-all;
+      letter-spacing: 0.04em;
+    }
+
+    .formatted-eval-result {
+      font-family: var(--font-mono);
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--orange-deep);
+      margin-left: 6px;
+    }
+
+    /* Action Buttons Grid */
+    .actions-grid {
+      display: grid;
+      grid-template-columns: auto auto 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .btn {
+      font-family: var(--font-display);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 11px;
+      height: 44px;
+      padding: 0 12px;
+      border: 1px solid var(--ink);
+      color: var(--ink);
+      background: var(--paper-white);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      font-weight: 600;
+      touch-action: manipulation;
+    }
+
+    .btn svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2.2;
+    }
+
+    .btn:active, .btn:hover {
+      background: var(--ink);
+      color: var(--paper);
+    }
+
+    .btn-orange {
+      border-color: var(--orange);
+      color: var(--orange-deep);
+      background: var(--paper-white);
+    }
+
+    .btn-orange:active, .btn-orange:hover {
+      background: var(--orange);
+      color: #ffffff;
+    }
+
+    .btn-green {
+      background: var(--green);
+      color: #ffffff;
+      border-color: var(--green-deep);
+      box-shadow: 2px 2px 0px var(--ink);
+    }
+
+    .btn-green:active, .btn-green:hover {
+      background: var(--green-deep);
+    }
+
+    .btn-next {
+      grid-column: span 4;
+      margin-top: 4px;
+      font-size: 12px;
+      height: 46px;
+      background: var(--orange);
+      color: #ffffff;
+      border-color: var(--orange-deep);
+      box-shadow: 2px 2px 0px var(--ink);
+    }
+
+    .btn-next:active, .btn-next:hover {
+      background: var(--orange-deep);
+    }
+
+    .btn-icon { width: 44px; padding: 0; }
+
+    /* Alert Banner */
+    .alert-banner {
+      padding: 10px 14px;
+      border-radius: 2px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .alert-banner.success { display: flex; background: var(--green-soft); border: 1px solid var(--green); color: var(--green-deep); }
+    .alert-banner.danger { display: flex; background: var(--danger-soft); border: 1px solid var(--danger); color: var(--danger); }
+    .alert-banner.info { display: flex; background: var(--orange-soft); border: 1px solid var(--orange); color: var(--orange-deep); }
+
+    /* Multiple Solutions Display */
+    .solutions-card {
+      background: var(--paper-light);
+      border: 1px solid var(--orange);
+      padding: 12px;
+      margin-top: 12px;
+      display: none;
+    }
+
+    .solutions-card.show {
+      display: block;
+      animation: fadeIn 0.25s ease-out;
+    }
+
+    .solutions-header {
+      font-family: var(--font-display);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--orange-deep);
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .solutions-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+
+    .sol-chip {
+      background: var(--paper-white);
+      border: 1px solid var(--orange);
+      padding: 4px 10px;
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    /* STATS ROW (WITH COUNTDOWN TIMER BADGE) */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .stat-card {
+      background: var(--paper-white);
+      border: 1px solid var(--ink);
+      padding: 10px 6px;
+      text-align: center;
+    }
+
+    .stat-label {
+      font-family: var(--font-display);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--ink-soft);
+    }
+
+    .stat-value {
+      font-family: var(--font-mono);
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .stat-value.highlight { color: var(--orange-deep); }
+    .stat-value.timer-warn { color: var(--danger); animation: pulseWarning 0.6s infinite alternate; }
+
+    @keyframes pulseWarning {
+      from { transform: scale(1); }
+      to { transform: scale(1.08); }
+    }
+
+    /* SETTINGS PANEL */
+    .settings-panel {
+      background: var(--paper-white);
+      border: 1px solid var(--ink);
+      padding: 14px 16px;
+      box-shadow: 3px 3px 0px rgba(11, 37, 69, 0.08);
+    }
+
+    .settings-title {
+      font-family: var(--font-display);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--ink-soft);
+      font-weight: 600;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .settings-hint-badge {
+      font-size: 9px;
+      color: var(--orange-deep);
+      text-transform: none;
+      font-weight: 500;
+    }
+
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .form-group label {
+      font-family: var(--font-display);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--ink-soft);
+      white-space: nowrap;
+    }
+
+    .input-control {
+      background: var(--paper);
+      border: 1px solid var(--ink);
+      border-radius: 0px;
+      color: var(--ink);
+      padding: 6px 8px;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      height: 36px;
+      width: 100%;
+      outline: none;
+    }
+
+    .range-input-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      height: 36px;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 24px;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 2px;
+      background: var(--ink);
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      background: var(--paper-white);
+      border: 2px solid var(--ink);
+      border-radius: 50%;
+      margin-top: -6px;
+    }
+
+    /* Checkbox / Toggle Switch Label */
+    .toggle-checkbox-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-display);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink);
+      cursor: pointer;
+      margin-top: 4px;
+    }
+
+    .toggle-checkbox-label input[type="checkbox"] {
+      accent-color: var(--orange);
+      width: 15px;
+      height: 15px;
+      cursor: pointer;
+    }
+
+    @media (max-width: 600px) {
+      .settings-grid { grid-template-columns: 1fr; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .keypad-grid { grid-template-columns: repeat(4, 1fr); }
+      .actions-grid { grid-template-columns: 1fr 1fr; }
+      .btn-next { grid-column: span 2; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+
+    <!-- MAIN GAME BOARD -->
+    <main class="game-board">
+      
+      <!-- Header Row with Corner Brand & Top Right Theme Toggle -->
+      <div class="header-row">
+        <div class="corner-brand">
+          <span class="dot"></span>
+          SPEED MATH — VISUAL FIELD GUIDE
+        </div>
+        <button class="theme-toggle-btn" id="themeToggleBtn" title="สลับธีม สว่าง / มืด">
+          <span id="themeIcon">🌙</span>
+          <span id="themeLabel">DARK</span>
+        </button>
+      </div>
+
+      <!-- Target Display -->
+      <div class="target-section">
+        <div class="target-label">เป้าหมายผลลัพธ์ (Target Result)</div>
+        <div class="target-badge">
+          <span class="target-number" id="targetNum">--</span>
+        </div>
+      </div>
+
+      <!-- KEYPAD SECTION (OPERATORS ONLY) -->
+      <div class="keypad-section">
+        <div class="keypad-grid">
+          <button class="op-btn" data-op="+">+</button>
+          <button class="op-btn" data-op="-">-</button>
+          <button class="op-btn" data-op="×">×</button>
+          <button class="op-btn" data-op="÷">÷</button>
+          <button class="op-btn" data-op="^">^</button>
+          <button class="op-btn" data-op="√">√</button>
+          <button class="op-btn" data-op="(">(</button>
+          <button class="op-btn" data-op=")">)</button>
+        </div>
+      </div>
+
+      <!-- REORDERABLE WORKSPACE ZONE -->
+      <div class="workspace-section">
+        <div class="workspace-dropzone" id="workspaceDropzone">
+          <!-- Dynamic tiles rendered here -->
+        </div>
+        
+        <!-- Unused Numbers Bar -->
+        <div class="unused-numbers-section">
+          <div class="unused-numbers-flex" id="unusedNumbersFlex"></div>
+        </div>
+      </div>
+
+      <!-- PLAIN TEXT EXPRESSION DISPLAY -->
+      <div class="text-result-section">
+        <div id="textResultDisplay">
+          <span class="formatted-expression-text" id="formattedExprText">--</span>
+          <span class="formatted-eval-result" id="formattedEvalBadge"></span>
+        </div>
+      </div>
+
+      <!-- Action Buttons Grid -->
+      <div class="actions-grid">
+        <button class="btn btn-icon" id="backspaceBtn" title="ลบตัวหลังสุด">
+          <svg viewBox="0 0 24 24"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zM18 9l-6 6M12 9l6 6"/></svg>
+        </button>
+        <button class="btn btn-icon" id="clearBtn" title="ล้างทั้งหมด">
+          <svg viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </button>
+        <button class="btn btn-orange" id="solveBtn">
+          <svg viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 0 1-2 2h-0a2 2 0 0 1-2-2v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+          เฉลยหลายแบบ
+        </button>
+        <button class="btn btn-green" id="checkBtn">
+          <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4L12 14.01l-3-3"/></svg>
+          ตรวจคำตอบ
+        </button>
+        
+        <!-- NEXT PUZZLE BUTTON -->
+        <button class="btn btn-next" id="nextBtn">
+          ข้อถัดไป
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+
+      <!-- Alert Banner -->
+      <div class="alert-banner" id="alertBanner">
+        <span id="alertMsg"></span>
+      </div>
+
+      <!-- Multiple Solutions Display -->
+      <div class="solutions-card" id="solutionsCard">
+        <div class="solutions-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+          ตัวอย่างเฉลยสมการที่เป็นไปได้ (หลายแบบ):
+        </div>
+        <div class="solutions-grid" id="solutionsGrid"></div>
+      </div>
+
+    </main>
+
+    <!-- STATS ROW (WITH COUNTDOWN TIMER BADGE) -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">เวลาคงเหลือ</div>
+        <div class="stat-value" id="timerVal">--</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">คะแนนรวม</div>
+        <div class="stat-value highlight" id="scoreVal">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Streak ต่อเนื่อง</div>
+        <div class="stat-value" id="streakVal">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">ข้อที่ผ่าน</div>
+        <div class="stat-value" id="solvedVal">0</div>
+      </div>
+    </div>
+
+    <!-- SETTINGS PANEL -->
+    <section class="settings-panel">
+      <div class="settings-title">
+        <span>ตั้งค่าระดับเกม (Game Settings)</span>
+        <span class="settings-hint-badge">*ค่าที่ปรับจะมีผลในข้อถัดไป</span>
+      </div>
+      <div class="settings-grid">
+        <div class="form-group">
+          <label>จำนวนเลขโจทย์สุ่ม (2 - 10)</label>
+          <div class="range-input-group">
+            <input type="range" id="countSlider" min="2" max="10" value="5">
+            <input type="number" id="countInput" class="input-control" min="2" max="10" value="5" style="width: 55px; flex: none;">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>ช่วงเลขสุ่ม (0 - 9999)</label>
+          <div style="display: flex; gap: 6px;">
+            <input type="number" id="minNumInput" class="input-control" min="0" max="9999" value="0" placeholder="ต่ำสุด">
+            <input type="number" id="maxNumInput" class="input-control" min="1" max="9999" value="9" placeholder="สูงสุด">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>เป้าหมายผลลัพธ์ (1 - 9999)</label>
+          <div style="display: flex; gap: 6px;">
+            <input type="number" id="minTargetInput" class="input-control" min="1" max="9999" value="100" placeholder="ต่ำสุด">
+            <input type="number" id="maxTargetInput" class="input-control" min="1" max="9999" value="999" placeholder="สูงสุด">
+          </div>
+        </div>
+        
+        <!-- ROW 2 SETTINGS -->
+        <div class="form-group" style="grid-column: span 1.5;">
+          <label>เวลาต่อข้อ (0 = ไม่นับเวลา)</label>
+          <input type="number" id="timeLimitInput" class="input-control" min="0" max="300" value="0" placeholder="วินาที (0 = ไม่จำกัด)">
+        </div>
+        <div class="form-group" style="grid-column: span 1.5; justify-content: flex-end;">
+          <label class="toggle-checkbox-label">
+            <input type="checkbox" id="autoNextToggle" checked>
+            หมดเวลาเปลี่ยนข้อถัดไปทันที
+          </label>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    /**
+     * Web Audio FX Synthesizer with iOS Safari Unlocking Fix
+     */
+    const AudioFX = {
+      ctx: null,
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) this.ctx = new AudioContext();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      },
+      playClick() {
+        this.init();
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(440, this.ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.04);
+          gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.04);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.04);
+        } catch (e) {}
+      },
+      playSuccess() {
+        this.init();
+        if (!this.ctx) return;
+        try {
+          const now = this.ctx.currentTime;
+          [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.18, now + i * 0.07);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.07 + 0.22);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now + i * 0.07);
+            osc.stop(now + i * 0.07 + 0.22);
+          });
+        } catch (e) {}
+      },
+      playError() {
+        this.init();
+        if (!this.ctx) return;
+        try {
+          const now = this.ctx.currentTime;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(180, now);
+          osc.frequency.linearRampToValueAtTime(110, now + 0.18);
+          gain.gain.setValueAtTime(0.18, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(now + 0.18);
+        } catch (e) {}
+      }
+    };
+
+    document.addEventListener('touchstart', () => AudioFX.init(), { once: true });
+    document.addEventListener('click', () => AudioFX.init(), { once: true });
+
+    /**
+     * Theme Toggle Controller
+     */
+    class ThemeController {
+      constructor() {
+        this.btn = document.getElementById('themeToggleBtn');
+        this.icon = document.getElementById('themeIcon');
+        this.label = document.getElementById('themeLabel');
+
+        const savedTheme = localStorage.getItem('speedmath_theme') || 'light';
+        if (savedTheme === 'dark') {
+          this.applyTheme(true);
+        }
+
+        this.btn.addEventListener('click', () => {
+          AudioFX.playClick();
+          const isDark = document.body.classList.toggle('dark-mode');
+          this.applyTheme(isDark);
+          localStorage.setItem('speedmath_theme', isDark ? 'dark' : 'light');
+        });
+      }
+
+      applyTheme(isDark) {
+        if (isDark) {
+          document.body.classList.add('dark-mode');
+          this.icon.textContent = '☀️';
+          this.label.textContent = 'LIGHT';
+        } else {
+          document.body.classList.remove('dark-mode');
+          this.icon.textContent = '🌙';
+          this.label.textContent = 'DARK';
+        }
+      }
+    }
+
+    /**
+     * Solver Engine supporting +, -, ×, ÷, ^, √
+     */
+    class MathSolver {
+      static solve(numbers, minTarget = 100, maxTarget = 999, maxSolutions = 25) {
+        const solutionsMap = new Map();
+
+        function backtrack(items, stepCount = { val: 0 }) {
+          if (stepCount.val > 4000) return;
+          stepCount.val++;
+
+          if (items.length === 1) {
+            const v = items[0].val;
+            if (Number.isFinite(v)) {
+              const k = Math.round(v * 10000) / 10000;
+              if (!solutionsMap.has(k)) solutionsMap.set(k, new Set());
+              if (solutionsMap.get(k).size < maxSolutions) {
+                solutionsMap.get(k).add(items[0].expr);
+              }
+            }
+            return;
+          }
+
+          const n = items.length;
+          for (let i = 0; i < n; i++) {
+            for (let j = 0; j < n; j++) {
+              if (i === j) continue;
+              const rem = items.filter((_, idx) => idx !== i && idx !== j);
+              const a = items[i];
+              const b = items[j];
+
+              backtrack([...rem, { val: a.val + b.val, expr: `(${a.expr} + ${b.expr})` }], stepCount);
+              backtrack([...rem, { val: a.val - b.val, expr: `(${a.expr} - ${b.expr})` }], stepCount);
+              backtrack([...rem, { val: a.val * b.val, expr: `(${a.expr} × ${b.expr})` }], stepCount);
+              if (Math.abs(b.val) > 1e-7) {
+                backtrack([...rem, { val: a.val / b.val, expr: `(${a.expr} ÷ ${b.expr})` }], stepCount);
+              }
+
+              if (b.val >= 0 && b.val <= 4 && a.val > 0 && a.val <= 50) {
+                const powVal = Math.pow(a.val, b.val);
+                if (Number.isFinite(powVal) && powVal <= maxTarget) {
+                  backtrack([...rem, { val: powVal, expr: `(${a.expr} ^ ${b.expr})` }], stepCount);
+                }
+              }
+            }
+          }
+        }
+
+        const initial = numbers.map((n, i) => ({ val: n, expr: n.toString(), id: i }));
+        backtrack(initial);
+        return solutionsMap;
+      }
+
+      static generateTarget(numbers, minTarget = 100, maxTarget = 999) {
+        let attempts = 0;
+        while (attempts < 100) {
+          attempts++;
+          let items = numbers.map(n => ({ val: n, expr: n.toString() }));
+          while (items.length > 1) {
+            const i = Math.floor(Math.random() * items.length);
+            let j = Math.floor(Math.random() * items.length);
+            while (j === i) j = Math.floor(Math.random() * items.length);
+
+            const a = items[i];
+            const b = items[j];
+            const ops = ['+', '-', '×', '÷', '^'];
+            const op = ops[Math.floor(Math.random() * ops.length)];
+
+            let newVal = 0;
+            let newExpr = '';
+            if (op === '+') { newVal = a.val + b.val; newExpr = `(${a.expr} + ${b.expr})`; }
+            else if (op === '-') { newVal = a.val - b.val; newExpr = `(${a.expr} - ${b.expr})`; }
+            else if (op === '×') { newVal = a.val * b.val; newExpr = `(${a.expr} × ${b.expr})`; }
+            else if (op === '^' && b.val >= 0 && b.val <= 3 && a.val <= 30) {
+              newVal = Math.pow(a.val, b.val);
+              newExpr = `(${a.expr} ^ ${b.expr})`;
+            } else {
+              if (Math.abs(b.val) < 1e-5) { newVal = a.val + b.val; newExpr = `(${a.expr} + ${b.expr})`; }
+              else { newVal = a.val / b.val; newExpr = `(${a.expr} ÷ ${b.expr})`; }
+            }
+
+            const first = Math.min(i, j);
+            const second = Math.max(i, j);
+            items.splice(second, 1);
+            items.splice(first, 1);
+            items.push({ val: newVal, expr: newExpr });
+          }
+
+          if (Number.isInteger(items[0].val) && items[0].val >= minTarget && items[0].val <= maxTarget) {
+            return items[0];
+          }
+        }
+        return { val: Math.floor(Math.random() * (maxTarget - minTarget + 1)) + minTarget, expr: 'คำนวณสมการ' };
+      }
+
+      static cleanExpression(expr) {
+        if (expr.startsWith('(') && expr.endsWith(')')) {
+          let depth = 0;
+          let redundant = true;
+          for (let i = 0; i < expr.length - 1; i++) {
+            if (expr[i] === '(') depth++;
+            else if (expr[i] === ')') depth--;
+            if (depth === 0 && i > 0) { redundant = false; break; }
+          }
+          if (redundant) return expr.slice(1, -1);
+        }
+        return expr;
+      }
+    }
+
+    /**
+     * Cross-Platform Speed Math Controller
+     */
+    class SpeedMathGame {
+      constructor() {
+        this.givenNumbers = [];
+        this.targetNumber = 0;
+        this.solutionsSet = new Set();
+        this.expressionTokens = [];
+        
+        // Touch Drag State
+        this.dragData = null;
+        this.dragProxyEl = null;
+
+        // Timer State
+        this.timerInterval = null;
+        this.remainingTime = 0;
+
+        this.score = 0;
+        this.streak = 0;
+        this.solvedCount = 0;
+
+        // Elements
+        this.countSlider = document.getElementById('countSlider');
+        this.countInput = document.getElementById('countInput');
+        this.maxNumInput = document.getElementById('maxNumInput');
+        this.minNumInput = document.getElementById('minNumInput');
+        this.minTargetInput = document.getElementById('minTargetInput');
+        this.maxTargetInput = document.getElementById('maxTargetInput');
+
+        this.timeLimitInput = document.getElementById('timeLimitInput');
+        this.autoNextToggle = document.getElementById('autoNextToggle');
+        this.timerValEl = document.getElementById('timerVal');
+
+        this.targetNumEl = document.getElementById('targetNum');
+        this.workspaceDropzone = document.getElementById('workspaceDropzone');
+        this.unusedNumbersFlex = document.getElementById('unusedNumbersFlex');
+        
+        this.formattedExprText = document.getElementById('formattedExprText');
+        this.formattedEvalBadge = document.getElementById('formattedEvalBadge');
+
+        this.scoreValEl = document.getElementById('scoreVal');
+        this.streakValEl = document.getElementById('streakVal');
+        this.solvedValEl = document.getElementById('solvedVal');
+
+        this.alertBanner = document.getElementById('alertBanner');
+        this.alertMsg = document.getElementById('alertMsg');
+        this.solutionsCard = document.getElementById('solutionsCard');
+        this.solutionsGrid = document.getElementById('solutionsGrid');
+
+        this.bindEvents();
+        this.initPointerDrag();
+        this.newPuzzle();
+      }
+
+      bindEvents() {
+        // Sync Count Slider and Count Input WITHOUT restarting current puzzle immediately
+        this.countSlider.addEventListener('input', () => {
+          this.countInput.value = this.countSlider.value;
+        });
+
+        this.countInput.addEventListener('input', () => {
+          let val = parseInt(this.countInput.value, 10);
+          if (!isNaN(val)) {
+            val = Math.max(2, Math.min(10, val));
+            this.countSlider.value = val;
+          }
+        });
+
+        document.querySelectorAll('.op-btn').forEach(b => {
+          b.addEventListener('click', () => {
+            AudioFX.playClick();
+            this.pushToken({ type: 'op', val: b.getAttribute('data-op') });
+          });
+        });
+
+        document.getElementById('checkBtn').addEventListener('click', () => this.checkAnswer());
+        document.getElementById('solveBtn').addEventListener('click', () => this.revealSolutions());
+        document.getElementById('nextBtn').addEventListener('click', () => {
+          AudioFX.playClick();
+          this.newPuzzle();
+        });
+        document.getElementById('clearBtn').addEventListener('click', () => {
+          AudioFX.playClick();
+          this.clearExpression();
+        });
+        document.getElementById('backspaceBtn').addEventListener('click', () => {
+          AudioFX.playClick();
+          this.popToken();
+        });
+
+        window.addEventListener('keydown', (e) => this.handleKeyDown(e));
+      }
+
+      initPointerDrag() {
+        const onPointerMove = (e) => {
+          if (!this.dragData) return;
+          e.preventDefault();
+
+          const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+          const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+
+          if (this.dragProxyEl) {
+            this.dragProxyEl.style.left = `${clientX}px`;
+            this.dragProxyEl.style.top = `${clientY}px`;
+          }
+
+          const dropRect = this.workspaceDropzone.getBoundingClientRect();
+          const isOver = clientX >= dropRect.left && clientX <= dropRect.right &&
+                         clientY >= dropRect.top && clientY <= dropRect.bottom;
+
+          if (isOver) {
+            this.workspaceDropzone.classList.add('drag-over');
+            let ghost = this.workspaceDropzone.querySelector('.drop-ghost');
+            if (!ghost) {
+              ghost = document.createElement('div');
+              ghost.className = 'drop-ghost';
+            }
+
+            const targetIndex = this.getDropIndexFromPoint(clientX);
+            const tiles = Array.from(this.workspaceDropzone.querySelectorAll('.tile'));
+            tiles.forEach(t => t.classList.remove('shift-right'));
+
+            if (targetIndex < tiles.length) {
+              this.workspaceDropzone.insertBefore(ghost, tiles[targetIndex]);
+              tiles[targetIndex].classList.add('shift-right');
+            } else {
+              this.workspaceDropzone.appendChild(ghost);
+            }
+          } else {
+            this.workspaceDropzone.classList.remove('drag-over');
+            const ghost = this.workspaceDropzone.querySelector('.drop-ghost');
+            if (ghost) ghost.remove();
+            const tiles = Array.from(this.workspaceDropzone.querySelectorAll('.tile'));
+            tiles.forEach(t => t.classList.remove('shift-right'));
+          }
+        };
+
+        const onPointerUp = (e) => {
+          if (!this.dragData) return;
+
+          const clientX = e.clientX || (e.changedTouches && e.changedTouches[0].clientX);
+          const clientY = e.clientY || (e.changedTouches && e.changedTouches[0].clientY);
+
+          const dropRect = this.workspaceDropzone.getBoundingClientRect();
+          const isOver = clientX >= dropRect.left && clientX <= dropRect.right &&
+                         clientY >= dropRect.top && clientY <= dropRect.bottom;
+
+          const ghost = this.workspaceDropzone.querySelector('.drop-ghost');
+          if (ghost) ghost.remove();
+          this.workspaceDropzone.classList.remove('drag-over');
+
+          const targetIndex = this.getDropIndexFromPoint(clientX);
+          const data = this.dragData;
+
+          if (isOver) {
+            if (data.sourceType === 'num') {
+              const item = this.givenNumbers.find(n => n.id === data.id);
+              if (item && !item.used) {
+                AudioFX.playClick();
+                item.used = true;
+                this.insertTokenAtIndex({ type: 'num', val: item.val, id: item.id }, targetIndex);
+              }
+            } else if (data.sourceType === 'op') {
+              AudioFX.playClick();
+              this.insertTokenAtIndex({ type: 'op', val: data.val }, targetIndex);
+            } else if (data.sourceType === 'tile') {
+              if (targetIndex !== null && targetIndex !== data.fromIndex) {
+                AudioFX.playClick();
+                const [movedToken] = this.expressionTokens.splice(data.fromIndex, 1);
+                const newIdx = targetIndex > data.fromIndex ? targetIndex - 1 : targetIndex;
+                this.expressionTokens.splice(newIdx, 0, movedToken);
+                this.render();
+              }
+            }
+          } else {
+            if (data.sourceType === 'tile') {
+              AudioFX.playClick();
+              this.removeTokenAtIndex(data.fromIndex);
+            }
+          }
+
+          if (this.dragProxyEl) {
+            this.dragProxyEl.remove();
+            this.dragProxyEl = null;
+          }
+          this.dragData = null;
+
+          window.removeEventListener('pointermove', onPointerMove);
+          window.removeEventListener('pointerup', onPointerUp);
+          window.removeEventListener('touchmove', onPointerMove);
+          window.removeEventListener('touchend', onPointerUp);
+        };
+
+        this.startDrag = (e, data, visualNode) => {
+          this.dragData = data;
+          const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+          const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+
+          this.dragProxyEl = visualNode.cloneNode(true);
+          this.dragProxyEl.className = `${visualNode.className} drag-proxy`;
+          this.dragProxyEl.style.left = `${clientX}px`;
+          this.dragProxyEl.style.top = `${clientY}px`;
+          document.body.appendChild(this.dragProxyEl);
+
+          window.addEventListener('pointermove', onPointerMove, { passive: false });
+          window.addEventListener('pointerup', onPointerUp);
+          window.addEventListener('touchmove', onPointerMove, { passive: false });
+          window.addEventListener('touchend', onPointerUp);
+        };
+
+        document.querySelectorAll('.op-btn').forEach(b => {
+          b.addEventListener('pointerdown', (e) => {
+            this.startDrag(e, { sourceType: 'op', val: b.getAttribute('data-op') }, b);
+          });
+        });
+      }
+
+      getDropIndexFromPoint(clientX) {
+        const tiles = Array.from(this.workspaceDropzone.querySelectorAll('.tile'));
+        for (let i = 0; i < tiles.length; i++) {
+          const rect = tiles[i].getBoundingClientRect();
+          const midX = rect.left + rect.width / 2;
+          if (clientX < midX) return i;
+        }
+        return tiles.length;
+      }
+
+      startTimer() {
+        if (this.timerInterval) clearInterval(this.timerInterval);
+
+        const limit = parseInt(this.timeLimitInput.value, 10) || 0;
+        this.timerValEl.classList.remove('timer-warn');
+
+        if (limit > 0) {
+          this.remainingTime = limit;
+          this.timerValEl.textContent = `${this.remainingTime}s`;
+
+          this.timerInterval = setInterval(() => {
+            this.remainingTime--;
+            if (this.remainingTime <= 5) {
+              this.timerValEl.classList.add('timer-warn');
+            }
+            this.timerValEl.textContent = `${this.remainingTime}s`;
+
+            if (this.remainingTime <= 0) {
+              clearInterval(this.timerInterval);
+              this.timerInterval = null;
+              AudioFX.playError();
+              
+              this.streak = 0;
+              this.streakValEl.textContent = this.streak;
+
+              if (this.autoNextToggle.checked) {
+                this.showAlert('หมดเวลาแล้ว! กำลังเปลี่ยนข้อถัดไป...', 'danger');
+                setTimeout(() => this.newPuzzle(), 1200);
+              } else {
+                this.showAlert('หมดเวลาแล้ว!', 'danger');
+              }
+            }
+          }, 1000);
+        } else {
+          this.timerValEl.textContent = '--';
+        }
+      }
+
+      newPuzzle() {
+        if (this.timerInterval) clearInterval(this.timerInterval);
+
+        const count = parseInt(this.countInput.value, 10) || 5;
+        const maxVal = Math.min(9999, Math.max(1, parseInt(this.maxNumInput.value, 10) || 9));
+        const minVal = Math.max(0, parseInt(this.minNumInput.value, 10) || 0);
+
+        const minTarget = Math.max(1, parseInt(this.minTargetInput.value, 10) || 100);
+        const maxTarget = Math.min(9999, Math.max(minTarget, parseInt(this.maxTargetInput.value, 10) || 999));
+
+        let found = false;
+        let attempts = 0;
+
+        while (!found && attempts < 250) {
+          attempts++;
+          const nums = [];
+          for (let i = 0; i < count; i++) {
+            nums.push(Math.floor(Math.random() * (maxVal - minVal + 1)) + minVal);
+          }
+
+          if (count <= 5) {
+            const solMap = MathSolver.solve(nums, minTarget, maxTarget, 20);
+            const valid = [];
+            for (const [val, set] of solMap.entries()) {
+              if (Number.isInteger(val) && val >= minTarget && val <= maxTarget) {
+                valid.push({ val, set });
+              }
+            }
+            if (valid.length > 0) {
+              const pick = valid[Math.floor(Math.random() * valid.length)];
+              this.targetNumber = pick.val;
+              this.solutionsSet = pick.set;
+              this.givenNumbers = nums.map((n, i) => ({ id: i, val: n, used: false }));
+              found = true;
+            }
+          } else {
+            const tree = MathSolver.generateTarget(nums, minTarget, maxTarget);
+            if (Number.isInteger(tree.val) && tree.val >= minTarget && tree.val <= maxTarget) {
+              this.targetNumber = tree.val;
+              this.solutionsSet = new Set([tree.expr]);
+              this.givenNumbers = nums.map((n, i) => ({ id: i, val: n, used: false }));
+              found = true;
+            }
+          }
+        }
+
+        this.clearExpression();
+        this.hideAlert();
+        this.solutionsCard.classList.remove('show');
+        this.render();
+        this.startTimer();
+      }
+
+      render() {
+        this.targetNumEl.textContent = this.targetNumber;
+
+        // Render Workspace Tiles
+        this.workspaceDropzone.innerHTML = '';
+        if (this.expressionTokens.length === 0) {
+          this.workspaceDropzone.innerHTML = `<span class="expr-placeholder" style="font-family:var(--font-display); font-size:0.8rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-soft);">แตะ/ลากวางตัวเลขและเครื่องหมายที่นี่ (ลากออกเพื่อลบ)...</span>`;
+        } else {
+          this.expressionTokens.forEach((token, idx) => {
+            const tile = document.createElement('div');
+            tile.className = `tile ${token.type === 'op' ? 'tile-op' : ''}`;
+            tile.title = "แตะเพื่อนำออก หรือ ลากสลับตำแหน่ง";
+
+            const label = document.createElement('span');
+            label.textContent = token.val;
+            tile.appendChild(label);
+
+            tile.addEventListener('click', (e) => {
+              e.stopPropagation();
+              AudioFX.playClick();
+              this.removeTokenAtIndex(idx);
+            });
+
+            tile.addEventListener('contextmenu', (e) => {
+              e.preventDefault();
+              AudioFX.playClick();
+              this.removeTokenAtIndex(idx);
+            });
+
+            tile.addEventListener('pointerdown', (e) => {
+              this.startDrag(e, { sourceType: 'tile', fromIndex: idx }, tile);
+            });
+
+            this.workspaceDropzone.appendChild(tile);
+          });
+        }
+
+        // Render Unused Numbers
+        this.unusedNumbersFlex.innerHTML = '';
+        const unused = this.givenNumbers.filter(n => !n.used);
+        unused.forEach(item => {
+          const card = document.createElement('div');
+          card.className = 'unused-card';
+          card.textContent = item.val;
+
+          card.addEventListener('click', () => {
+            AudioFX.playClick();
+            item.used = true;
+            this.pushToken({ type: 'num', val: item.val, id: item.id });
+          });
+
+          card.addEventListener('pointerdown', (e) => {
+            this.startDrag(e, { sourceType: 'num', id: item.id }, card);
+          });
+
+          this.unusedNumbersFlex.appendChild(card);
+        });
+
+        // Formatted text output
+        if (this.expressionTokens.length === 0) {
+          this.formattedExprText.textContent = '--';
+          this.formattedEvalBadge.textContent = '';
+        } else {
+          let textStr = '';
+          for (let i = 0; i < this.expressionTokens.length; i++) {
+            const curr = this.expressionTokens[i];
+            const prev = i > 0 ? this.expressionTokens[i - 1] : null;
+
+            if (i > 0) {
+              if (prev.type === 'num' && curr.type === 'num') {
+                textStr += ', ';
+              } else {
+                textStr += ' ';
+              }
+            }
+            textStr += curr.val;
+          }
+
+          this.formattedExprText.textContent = textStr;
+          const val = this.evaluateExpression();
+          if (val !== null && Number.isFinite(val)) {
+            const formatted = Number.isInteger(val) ? val : Math.round(val * 100) / 100;
+            this.formattedEvalBadge.textContent = `= ${formatted}`;
+          } else {
+            this.formattedEvalBadge.textContent = '= ?';
+          }
+        }
+      }
+
+      pushToken(token) {
+        this.expressionTokens.push(token);
+        this.hideAlert();
+        this.render();
+      }
+
+      insertTokenAtIndex(token, idx) {
+        if (idx >= 0 && idx <= this.expressionTokens.length) {
+          this.expressionTokens.splice(idx, 0, token);
+        } else {
+          this.expressionTokens.push(token);
+        }
+        this.hideAlert();
+        this.render();
+      }
+
+      popToken() {
+        if (this.expressionTokens.length === 0) return;
+        const popped = this.expressionTokens.pop();
+        if (popped.type === 'num' && popped.id !== undefined) {
+          const item = this.givenNumbers.find(n => n.id === popped.id);
+          if (item) item.used = false;
+        }
+        this.hideAlert();
+        this.render();
+      }
+
+      removeTokenAtIndex(idx) {
+        if (idx >= 0 && idx < this.expressionTokens.length) {
+          const [removed] = this.expressionTokens.splice(idx, 1);
+          if (removed.type === 'num' && removed.id !== undefined) {
+            const item = this.givenNumbers.find(n => n.id === removed.id);
+            if (item) item.used = false;
+          }
+          this.hideAlert();
+          this.render();
+        }
+      }
+
+      clearExpression() {
+        this.expressionTokens = [];
+        this.givenNumbers.forEach(n => n.used = false);
+        this.hideAlert();
+        this.render();
+      }
+
+      evaluateExpression() {
+        if (this.expressionTokens.length === 0) return null;
+
+        for (let i = 0; i < this.expressionTokens.length - 1; i++) {
+          if (this.expressionTokens[i].type === 'num' && this.expressionTokens[i + 1].type === 'num') {
+            return null;
+          }
+        }
+
+        try {
+          let exprStr = this.expressionTokens.map(t => {
+            if (t.val === '×') return '*';
+            if (t.val === '÷') return '/';
+            return t.val;
+          }).join('');
+
+          exprStr = exprStr.replace(/√\s*\(([^)]+)\)/g, "Math.sqrt($1)");
+          exprStr = exprStr.replace(/√\s*(\d+(?:\.\d+)?)/g, "Math.sqrt($1)");
+          exprStr = exprStr.replace(/\^/g, "**");
+
+          if (!/^[0-9+\-*/().\s*Mathsqrt]+$/.test(exprStr)) return null;
+          const fn = new Function(`"use strict"; return (${exprStr})`);
+          const res = fn();
+          return typeof res === 'number' && !isNaN(res) ? res : null;
+        } catch (e) {
+          return null;
+        }
+      }
+
+      checkAnswer() {
+        const unused = this.givenNumbers.filter(n => !n.used);
+        if (unused.length > 0) {
+          AudioFX.playError();
+          this.showAlert(`ใช้ตัวเลขยังไม่ครบ! ยังเหลือเลข: ${unused.map(n => n.val).join(', ')}`, 'danger');
+          return;
+        }
+
+        for (let i = 0; i < this.expressionTokens.length - 1; i++) {
+          if (this.expressionTokens[i].type === 'num' && this.expressionTokens[i + 1].type === 'num') {
+            AudioFX.playError();
+            this.showAlert('สมการไม่ถูกต้อง: ต้องใส่เครื่องหมายคำนวณระหว่างตัวเลข (ไม่สามารถนำเลขมาวางติดกันได้)', 'danger');
+            return;
+          }
+        }
+
+        const res = this.evaluateExpression();
+        if (res === null) {
+          AudioFX.playError();
+          this.showAlert('สมการไม่ถูกต้องตามหลักคณิตศาสตร์', 'danger');
+          return;
+        }
+
+        if (Math.abs(res - this.targetNumber) < 1e-6) {
+          AudioFX.playSuccess();
+          if (this.timerInterval) clearInterval(this.timerInterval);
+
+          this.score += 100 + (this.streak * 20);
+          this.streak += 1;
+          this.solvedCount += 1;
+
+          this.scoreValEl.textContent = this.score;
+          this.streakValEl.textContent = this.streak;
+          this.solvedValEl.textContent = this.solvedCount;
+
+          this.showAlert(`ถูกต้องแล้วครับ! 🎉 (+${100 + ((this.streak - 1) * 20)} คะแนน) สามารถเรียงสลับรูปแบบอื่นเพิ่มได้ หรือกด "ข้อถัดไป"`, 'success');
+        } else {
+          AudioFX.playError();
+          this.streak = 0;
+          this.streakValEl.textContent = this.streak;
+          const formatted = Number.isInteger(res) ? res : Math.round(res * 100) / 100;
+          this.showAlert(`ยังไม่ถูกต้อง! ผลลัพธ์ของคุณคือ ${formatted} (เป้าหมายคือ ${this.targetNumber})`, 'danger');
+        }
+      }
+
+      revealSolutions() {
+        AudioFX.playClick();
+        this.solutionsGrid.innerHTML = '';
+        if (!this.solutionsSet || this.solutionsSet.size === 0) {
+          this.solutionsGrid.innerHTML = `<div class="sol-chip">ไม่พบเฉลยตัวอย่าง</div>`;
+        } else {
+          const solArray = Array.from(this.solutionsSet).slice(0, 15);
+          solArray.forEach(expr => {
+            const cleaned = MathSolver.cleanExpression(expr);
+            const chip = document.createElement('div');
+            chip.className = 'sol-chip';
+            chip.textContent = `${cleaned} = ${this.targetNumber}`;
+            this.solutionsGrid.appendChild(chip);
+          });
+        }
+        this.solutionsCard.classList.add('show');
+        this.showAlert(`แสดงตัวอย่างเฉลยที่เป็นไปได้ (${Math.min(15, this.solutionsSet.size)} แบบ) เรียบร้อยแล้ว`, 'info');
+      }
+
+      showAlert(msg, type) {
+        this.alertMsg.textContent = msg;
+        this.alertBanner.className = `alert-banner ${type}`;
+      }
+
+      hideAlert() {
+        this.alertBanner.className = 'alert-banner';
+      }
+
+      handleKeyDown(e) {
+        // DO NOT INTERCEPT KEYS IF TYPING INSIDE INPUT FIELDS OR TEXTAREAS
+        const active = document.activeElement;
+        if (active && ['INPUT', 'TEXTAREA', 'SELECT'].includes(active.tagName)) {
+          return;
+        }
+
+        if (e.key === 'Backspace') {
+          e.preventDefault();
+          this.popToken();
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          this.checkAnswer();
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          this.clearExpression();
+        } else if (['+', '-', '*', '/', '^'].includes(e.key)) {
+          e.preventDefault();
+          const opMap = { '*': '×', '/': '÷', '+': '+', '-': '-', '^': '^' };
+          this.pushToken({ type: 'op', val: opMap[e.key] });
+        } else if (['(', ')'].includes(e.key)) {
+          e.preventDefault();
+          this.pushToken({ type: 'op', val: e.key });
+        } else if (/^[0-9]$/.test(e.key)) {
+          const val = parseInt(e.key, 10);
+          const unused = this.givenNumbers.find(n => !n.used && n.val === val);
+          if (unused) {
+            AudioFX.playClick();
+            unused.used = true;
+            this.pushToken({ type: 'num', val: unused.val, id: unused.id });
+          }
+        }
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      window.themeCtrl = new ThemeController();
+      window.game = new SpeedMathGame();
+    });
+  </script>
+</body>
+</html>
