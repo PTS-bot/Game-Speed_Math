@@ -782,6 +782,42 @@
       100% { transform: translateX(0); }
     }
 
+    /* BOSS COMBO ACTIVE ANIMATED EFFECT */
+    .boss-section.boss-combo-active {
+      border-color: var(--orange);
+      box-shadow: 0 0 14px rgba(249, 115, 22, 0.6), 2px 2px 0px var(--ink);
+      animation: comboPulse 1.2s infinite alternate;
+    }
+
+    @keyframes comboPulse {
+      from { box-shadow: 0 0 8px rgba(249, 115, 22, 0.4), 2px 2px 0px var(--ink); }
+      to { box-shadow: 0 0 16px rgba(239, 68, 68, 0.8), 2px 2px 0px var(--ink); }
+    }
+
+    .boss-combo-active .boss-hp-bar-inner {
+      background: linear-gradient(90deg, #EF4444, #F97316, #F59E0B, #10B981);
+      background-size: 200% 100%;
+      animation: comboFlame 1.5s infinite linear;
+    }
+
+    @keyframes comboFlame {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .boss-combo-badge {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 800;
+      color: #ffffff;
+      background: var(--orange);
+      padding: 1px 6px;
+      border-radius: 2px;
+      margin-left: 6px;
+      animation: pulseWarning 0.6s infinite alternate;
+    }
+
     /* CALCULATOR MODE STYLES */
     .calc-keypad-grid {
       display: grid;
@@ -1368,6 +1404,12 @@
         this.bossLevel = 1;
         this.bossMaxHp = 1000;
         this.bossHp = 1000;
+
+        // Speed Attack Combo System Properties
+        this.puzzleStartTime = Date.now();
+        this.prevSolveTime = null;
+        this.comboCount = 0;
+        this.isSolutionRevealed = false;
         this.mode = localStorage.getItem('speedmath_mode') || 'calc';
 
         // Elements
@@ -1687,6 +1729,17 @@
           }
         }
 
+        this.puzzleStartTime = Date.now();
+        this.isSolutionRevealed = false;
+
+        const checkBtn = document.getElementById('checkBtn');
+        if (checkBtn) {
+          checkBtn.disabled = false;
+          checkBtn.style.opacity = '1';
+          checkBtn.style.cursor = 'pointer';
+          checkBtn.style.pointerEvents = 'auto';
+        }
+
         this.clearExpression();
         this.hideAlert();
         this.solutionsCard.classList.remove('show');
@@ -1802,7 +1855,10 @@
         const barEl = document.getElementById('bossHpBarInner');
         const sectionEl = document.getElementById('bossSection');
 
-        if (titleEl) titleEl.textContent = `👾 BOSS LV.${this.bossLevel}`;
+        const mult = 1.0 + (this.comboCount * 0.1);
+        const comboBadgeHTML = this.comboCount > 0 ? `<span class="boss-combo-badge">⚡ SPEED COMBO x${mult.toFixed(1)}</span>` : '';
+
+        if (titleEl) titleEl.innerHTML = `👾 BOSS LV.${this.bossLevel} ${comboBadgeHTML}`;
         if (textEl) textEl.textContent = `${this.bossHp} / ${this.bossMaxHp} HP`;
         
         if (barEl) {
@@ -1810,10 +1866,17 @@
           barEl.style.width = `${pct}%`;
         }
 
-        if (isHit && sectionEl) {
-          sectionEl.classList.remove('boss-hit-anim');
-          void sectionEl.offsetWidth;
-          sectionEl.classList.add('boss-hit-anim');
+        if (sectionEl) {
+          if (this.comboCount > 0) {
+            sectionEl.classList.add('boss-combo-active');
+          } else {
+            sectionEl.classList.remove('boss-combo-active');
+          }
+          if (isHit) {
+            sectionEl.classList.remove('boss-hit-anim');
+            void sectionEl.offsetWidth;
+            sectionEl.classList.add('boss-hit-anim');
+          }
         }
       }
 
@@ -1983,6 +2046,12 @@
       }
 
       checkAnswer() {
+        if (this.isSolutionRevealed) {
+          AudioFX.playError();
+          this.showAlert('คุณเปิดดูเฉลยแล้ว ไม่สามารถกดตรวจคำตอบเพื่อโจมตี Boss ในข้อนี้ได้ (กด "ข้อถัดไป" เพื่อสู้ต่อ)', 'danger');
+          return;
+        }
+
         const unused = this.givenNumbers.filter(n => !n.used);
         if (unused.length > 0) {
           AudioFX.playError();
@@ -2005,12 +2074,14 @@
           return;
         }
 
+        const elapsedSec = (Date.now() - this.puzzleStartTime) / 1000;
         const diff = Math.abs(res - this.targetNumber);
-        let damage = 0;
+
+        let baseDamage = 0;
         let pointsEarned = 0;
 
         if (diff < 1e-6) {
-          damage = 100;
+          baseDamage = 100;
           pointsEarned = 100 + (this.streak * 20);
           this.streak += 1;
           this.solvedCount += 1;
@@ -2018,7 +2089,7 @@
           if (this.timerInterval) clearInterval(this.timerInterval);
         } else {
           const accuracy = Math.max(0, Math.round(100 - diff));
-          damage = accuracy;
+          baseDamage = accuracy;
           pointsEarned = accuracy;
           if (accuracy > 0) {
             AudioFX.playClick();
@@ -2029,8 +2100,25 @@
           }
         }
 
-        this.bossHp = Math.max(0, this.bossHp - damage);
-        this.score += pointsEarned;
+        // Calculate Speed Attack Combo Multiplier
+        let multiplier = 1.0;
+        if (baseDamage > 0) {
+          if (this.prevSolveTime !== null && elapsedSec < this.prevSolveTime) {
+            this.comboCount += 1;
+          } else {
+            this.comboCount = 0;
+          }
+          this.prevSolveTime = elapsedSec;
+          multiplier = 1.0 + (this.comboCount * 0.1);
+        } else {
+          this.comboCount = 0;
+          this.prevSolveTime = null;
+        }
+
+        const finalDamage = Math.round(baseDamage * multiplier);
+
+        this.bossHp = Math.max(0, this.bossHp - finalDamage);
+        this.score += Math.round(pointsEarned * multiplier);
 
         this.scoreValEl.textContent = this.score;
         this.streakValEl.textContent = this.streak;
@@ -2039,11 +2127,12 @@
         this.updateBossUI(true);
 
         const formatted = Number.isInteger(res) ? res : Math.round(res * 100) / 100;
+        const comboMsg = this.comboCount > 0 ? ` ⚡ SPEED COMBO x${multiplier.toFixed(1)}!` : '';
 
         if (diff < 1e-6) {
-          this.showAlert(`ถูกต้องเป๊ะ! 🎉 ตี BOSS -${damage} HP (+${pointsEarned} คะแนน)`, 'success');
-        } else if (damage > 0) {
-          this.showAlert(`คำตอบคือ ${formatted} (คลาดเคลื่อน ±${Math.round(diff * 100) / 100}) ตี BOSS -${damage} HP (+${pointsEarned} คะแนน)`, 'info');
+          this.showAlert(`ถูกต้องเป๊ะ! 🎉${comboMsg} ตี BOSS -${finalDamage} HP (ใช้เวลา ${elapsedSec.toFixed(1)}s)`, 'success');
+        } else if (finalDamage > 0) {
+          this.showAlert(`คำตอบคือ ${formatted} (คลาดเคลื่อน ±${Math.round(diff * 100) / 100})${comboMsg} ตี BOSS -${finalDamage} HP`, 'info');
         } else {
           this.showAlert(`คลาดเคลื่อนมากเกินไป! ผลลัพธ์ของคุณคือ ${formatted} (เป้าหมายคือ ${this.targetNumber}) ไม่เกิดความเสียหาย (0 HP)`, 'danger');
         }
@@ -2062,6 +2151,16 @@
 
       revealSolutions() {
         AudioFX.playClick();
+        this.isSolutionRevealed = true;
+
+        const checkBtn = document.getElementById('checkBtn');
+        if (checkBtn) {
+          checkBtn.disabled = true;
+          checkBtn.style.opacity = '0.4';
+          checkBtn.style.cursor = 'not-allowed';
+          checkBtn.style.pointerEvents = 'none';
+        }
+
         this.solutionsGrid.innerHTML = '';
         if (!this.solutionsSet || this.solutionsSet.size === 0) {
           this.solutionsGrid.innerHTML = `<div class="sol-chip">ไม่พบเฉลยตัวอย่าง</div>`;
@@ -2076,7 +2175,7 @@
           });
         }
         this.solutionsCard.classList.add('show');
-        this.showAlert(`แสดงตัวอย่างเฉลยที่เป็นไปได้ (${Math.min(15, this.solutionsSet.size)} แบบ) เรียบร้อยแล้ว`, 'info');
+        this.showAlert(`เปิดดูเฉลยแล้ว! ปุ่มตรวจคำตอบถูกปิดใช้งานสำหรับข้อนี้ (กด "ข้อถัดไป" เพื่อเริ่มข้อใหม่)`, 'info');
       }
 
       showAlert(msg, type) {
