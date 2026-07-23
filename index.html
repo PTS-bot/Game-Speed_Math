@@ -371,26 +371,40 @@
     .text-result-section {
       text-align: center;
       margin-bottom: 16px;
-      padding: 8px 10px;
-      border-top: 1px dashed var(--ink-faint);
-      border-bottom: 1px dashed var(--ink-faint);
+      padding: 12px 14px;
+      background: var(--paper-light);
+      border: 1px solid var(--ink-faint);
+      box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    #textResultDisplay {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
     .formatted-expression-text {
       font-family: var(--font-mono);
-      font-size: 1.6rem;
+      font-size: 1.65rem;
       font-weight: 600;
       color: var(--ink);
       word-break: break-all;
       letter-spacing: 0.04em;
+      min-height: 2.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .formatted-eval-result {
       font-family: var(--font-mono);
-      font-size: 1.4rem;
+      font-size: 1.45rem;
       font-weight: 700;
       color: var(--orange-deep);
-      margin-left: 6px;
+      min-height: 1.8rem;
     }
 
     /* Action Buttons Grid */
@@ -695,6 +709,159 @@
       .actions-grid { grid-template-columns: 1fr 1fr; }
       .btn-next { grid-column: span 2; }
     }
+
+    .actions-grid.calc-actions-grid {
+      grid-template-columns: 1fr 1fr !important;
+    }
+
+    .actions-grid.calc-actions-grid .btn-next {
+      grid-column: span 2 !important;
+    }
+
+    /* BOSS STATUS SECTION */
+    .boss-section {
+      background: var(--paper-warm);
+      border: 1px solid var(--ink);
+      padding: 8px 12px;
+      margin-bottom: 10px;
+      box-shadow: 2px 2px 0px var(--ink-faint);
+      transition: all 0.2s ease;
+    }
+
+    .boss-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+      font-family: var(--font-display);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-weight: 700;
+    }
+
+    .boss-title {
+      color: var(--danger);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .boss-hp-text {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink);
+    }
+
+    .boss-hp-bar-outer {
+      height: 12px;
+      background: var(--paper-light);
+      border: 1px solid var(--ink);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .boss-hp-bar-inner {
+      height: 100%;
+      background: linear-gradient(90deg, var(--danger), var(--orange));
+      transition: width 0.35s ease-out;
+    }
+
+    .boss-hit-anim {
+      animation: bossHit 0.3s ease-in-out;
+    }
+
+    @keyframes bossHit {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-4px); }
+      50% { transform: translateX(4px); }
+      75% { transform: translateX(-2px); }
+      100% { transform: translateX(0); }
+    }
+
+    /* CALCULATOR MODE STYLES */
+    .calc-keypad-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+      margin-bottom: 16px;
+    }
+
+    .calc-btn {
+      height: 52px;
+      font-family: var(--font-mono);
+      font-size: 1.35rem;
+      font-weight: 600;
+      border: 1px solid var(--ink);
+      background: var(--paper-white);
+      color: var(--ink);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: all 0.15s ease;
+      touch-action: manipulation;
+      box-shadow: 2px 2px 0px var(--ink-faint);
+    }
+
+    .calc-btn:active {
+      transform: translateY(1px);
+      box-shadow: 1px 1px 0px var(--ink);
+    }
+
+    .calc-op-btn {
+      background: var(--paper-warm);
+      font-weight: 700;
+    }
+
+    .calc-action-btn {
+      background: var(--orange-soft);
+      color: var(--orange-deep);
+      border-color: var(--orange);
+      font-weight: 700;
+    }
+
+    .calc-num-available {
+      background: var(--paper-white);
+      border: 2px solid var(--orange);
+      color: var(--orange-deep);
+      font-weight: 700;
+      font-size: 1.5rem;
+      box-shadow: 2px 2px 0px var(--orange-soft);
+    }
+
+    .calc-num-available:hover, .calc-num-available:active {
+      background: var(--orange);
+      color: #ffffff;
+    }
+
+    .calc-num-disabled {
+      opacity: 0.3;
+      background: var(--paper-light);
+      border: 1px solid var(--ink-faint);
+      color: var(--ink-faint);
+      cursor: not-allowed;
+      pointer-events: none;
+      box-shadow: none;
+    }
+
+    .calc-badge {
+      position: absolute;
+      top: 3px;
+      right: 5px;
+      font-size: 0.72rem;
+      font-family: var(--font-mono);
+      font-weight: 800;
+      color: var(--orange-deep);
+      line-height: 1;
+    }
+
+    .calc-num-available:active .calc-badge,
+    .calc-num-available:hover .calc-badge {
+      color: #ffffff;
+    }
   </style>
 </head>
 <body>
@@ -704,16 +871,41 @@
     <!-- MAIN GAME BOARD -->
     <main class="game-board">
       
-      <!-- Header Row with Corner Brand & Top Right Theme Toggle -->
+      <!-- Header Row with Corner Brand & Mode/Theme Toggles -->
       <div class="header-row">
         <div class="corner-brand">
           <span class="dot"></span>
           SPEED MATH — VISUAL FIELD GUIDE
         </div>
-        <button class="theme-toggle-btn" id="themeToggleBtn" title="สลับธีม สว่าง / มืด">
-          <span id="themeIcon">🌙</span>
-          <span id="themeLabel">DARK</span>
-        </button>
+        <div style="display: flex; gap: 6px; align-items: center;">
+          <button class="theme-toggle-btn" id="modeToggleBtn" title="สลับโหมด เครื่องคิดเลข / การ์ดลากวาง">
+            <span id="modeIcon">🧮</span>
+            <span id="modeLabel">CALC</span>
+          </button>
+          <button class="theme-toggle-btn" id="themeToggleBtn" title="สลับธีม สว่าง / มืด">
+            <span id="themeIcon">🌙</span>
+            <span id="themeLabel">DARK</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- BOSS STATUS BANNER -->
+      <div class="boss-section" id="bossSection">
+        <div class="boss-header">
+          <span class="boss-title" id="bossTitle">👾 BOSS LV.1 — MATH GUARDIAN</span>
+          <span class="boss-hp-text" id="bossHpText">1000 / 1000 HP</span>
+        </div>
+        <div class="boss-hp-bar-outer">
+          <div class="boss-hp-bar-inner" id="bossHpBarInner" style="width: 100%;"></div>
+        </div>
+      </div>
+
+      <!-- PLAIN TEXT EXPRESSION DISPLAY (MOVED TO TOP ABOVE TARGET RESULT) -->
+      <div class="text-result-section">
+        <div id="textResultDisplay">
+          <span class="formatted-expression-text" id="formattedExprText">--</span>
+          <span class="formatted-eval-result" id="formattedEvalBadge"></span>
+        </div>
       </div>
 
       <!-- Target Display -->
@@ -724,37 +916,39 @@
         </div>
       </div>
 
-      <!-- KEYPAD SECTION (OPERATORS ONLY) -->
-      <div class="keypad-section">
-        <div class="keypad-grid">
-          <button class="op-btn" data-op="+">+</button>
-          <button class="op-btn" data-op="-">-</button>
-          <button class="op-btn" data-op="×">×</button>
-          <button class="op-btn" data-op="÷">÷</button>
-          <button class="op-btn" data-op="^">^</button>
-          <button class="op-btn" data-op="√">√</button>
-          <button class="op-btn" data-op="(">(</button>
-          <button class="op-btn" data-op=")">)</button>
+      <!-- CARD MODE CONTAINER (TABS/TILES & OPERATORS) -->
+      <div id="cardModeContainer">
+        <!-- KEYPAD SECTION (OPERATORS ONLY) -->
+        <div class="keypad-section">
+          <div class="keypad-grid">
+            <button class="op-btn" data-op="+">+</button>
+            <button class="op-btn" data-op="-">-</button>
+            <button class="op-btn" data-op="×">×</button>
+            <button class="op-btn" data-op="÷">÷</button>
+            <button class="op-btn" data-op="^">^</button>
+            <button class="op-btn" data-op="√">√</button>
+            <button class="op-btn" data-op="(">(</button>
+            <button class="op-btn" data-op=")">)</button>
+          </div>
+        </div>
+
+        <!-- REORDERABLE WORKSPACE ZONE -->
+        <div class="workspace-section">
+          <div class="workspace-dropzone" id="workspaceDropzone">
+            <!-- Dynamic tiles rendered here -->
+          </div>
+          
+          <!-- Unused Numbers Bar -->
+          <div class="unused-numbers-section">
+            <div class="unused-numbers-flex" id="unusedNumbersFlex"></div>
+          </div>
         </div>
       </div>
 
-      <!-- REORDERABLE WORKSPACE ZONE -->
-      <div class="workspace-section">
-        <div class="workspace-dropzone" id="workspaceDropzone">
-          <!-- Dynamic tiles rendered here -->
-        </div>
-        
-        <!-- Unused Numbers Bar -->
-        <div class="unused-numbers-section">
-          <div class="unused-numbers-flex" id="unusedNumbersFlex"></div>
-        </div>
-      </div>
-
-      <!-- PLAIN TEXT EXPRESSION DISPLAY -->
-      <div class="text-result-section">
-        <div id="textResultDisplay">
-          <span class="formatted-expression-text" id="formattedExprText">--</span>
-          <span class="formatted-eval-result" id="formattedEvalBadge"></span>
+      <!-- CALCULATOR MODE CONTAINER (RETRO CALCULATOR KEYPAD) -->
+      <div id="calcModeContainer" style="display: none;">
+        <div class="calc-keypad-grid" id="calcKeypadGrid">
+          <!-- Calculator Keypad Rendered Dynamically -->
         </div>
       </div>
 
@@ -858,6 +1052,12 @@
             หมดเวลาเปลี่ยนข้อถัดไปทันที
           </label>
         </div>
+        <div class="form-group" style="grid-column: span 3;">
+          <label class="toggle-checkbox-label">
+            <input type="checkbox" id="uniqueNumbersToggle">
+            ป้องกันเลขโจทย์สุ่มซ้ำกัน (เปิดเพื่อไม่ให้สุ่มได้ตัวเลขซ้ำกันในข้อเดียวกัน)
+          </label>
+        </div>
       </div>
     </section>
 
@@ -933,6 +1133,64 @@
         } catch (e) {}
       }
     };
+
+
+    /**
+     * Mode Toggle Controller (Card Tile Mode vs Calculator Keypad Mode)
+     */
+    class ModeController {
+      constructor(game) {
+        this.game = game;
+        this.btn = document.getElementById('modeToggleBtn');
+        this.icon = document.getElementById('modeIcon');
+        this.label = document.getElementById('modeLabel');
+
+        this.cardContainer = document.getElementById('cardModeContainer');
+        this.calcContainer = document.getElementById('calcModeContainer');
+
+        const savedMode = localStorage.getItem('speedmath_mode') || 'calc';
+        this.applyMode(savedMode);
+
+        this.btn.addEventListener('click', () => {
+          AudioFX.playClick();
+          const newMode = this.game.mode === 'calc' ? 'tile' : 'calc';
+          this.applyMode(newMode);
+          localStorage.setItem('speedmath_mode', newMode);
+          
+          const hasNonSingleDigit = this.game.givenNumbers.some(n => n.val < 0 || n.val > 9);
+          if (newMode === 'calc' && hasNonSingleDigit) {
+            this.game.newPuzzle();
+          } else {
+            this.game.render();
+          }
+        });
+      }
+
+      applyMode(mode) {
+        this.game.mode = mode;
+        const backspaceBtn = document.getElementById('backspaceBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const actionsGrid = document.querySelector('.actions-grid');
+
+        if (mode === 'calc') {
+          this.cardContainer.style.display = 'none';
+          this.calcContainer.style.display = 'block';
+          if (backspaceBtn) backspaceBtn.style.display = 'none';
+          if (clearBtn) clearBtn.style.display = 'none';
+          if (actionsGrid) actionsGrid.classList.add('calc-actions-grid');
+          this.icon.textContent = '🎴';
+          this.label.textContent = 'CARDS';
+        } else {
+          this.cardContainer.style.display = 'block';
+          this.calcContainer.style.display = 'none';
+          if (backspaceBtn) backspaceBtn.style.display = 'inline-flex';
+          if (clearBtn) clearBtn.style.display = 'inline-flex';
+          if (actionsGrid) actionsGrid.classList.remove('calc-actions-grid');
+          this.icon.textContent = '🧮';
+          this.label.textContent = 'CALC';
+        }
+      }
+    }
 
     document.addEventListener('touchstart', () => AudioFX.init(), { once: true });
     document.addEventListener('click', () => AudioFX.init(), { once: true });
@@ -1104,6 +1362,12 @@
         this.streak = 0;
         this.solvedCount = 0;
 
+        // Boss Battle System Properties
+        this.bossLevel = 1;
+        this.bossMaxHp = 1000;
+        this.bossHp = 1000;
+        this.mode = localStorage.getItem('speedmath_mode') || 'calc';
+
         // Elements
         this.countSlider = document.getElementById('countSlider');
         this.countInput = document.getElementById('countInput');
@@ -1114,6 +1378,7 @@
 
         this.timeLimitInput = document.getElementById('timeLimitInput');
         this.autoNextToggle = document.getElementById('autoNextToggle');
+        this.uniqueNumbersToggle = document.getElementById('uniqueNumbersToggle');
         this.timerValEl = document.getElementById('timerVal');
 
         this.targetNumEl = document.getElementById('targetNum');
@@ -1133,6 +1398,12 @@
         this.solutionsGrid = document.getElementById('solutionsGrid');
 
         this.bindEvents();
+        this.minTargetInput.addEventListener('change', () => {
+          let val = parseInt(this.minTargetInput.value, 10);
+          if (isNaN(val) || val < 1) {
+            this.minTargetInput.value = 1;
+          }
+        });
         this.initPointerDrag();
         this.newPuzzle();
       }
@@ -1352,10 +1623,18 @@
         if (this.timerInterval) clearInterval(this.timerInterval);
 
         const count = parseInt(this.countInput.value, 10) || 5;
-        const maxVal = Math.min(9999, Math.max(1, parseInt(this.maxNumInput.value, 10) || 9));
-        const minVal = Math.max(0, parseInt(this.minNumInput.value, 10) || 0);
+        let maxVal = Math.min(9999, Math.max(1, parseInt(this.maxNumInput.value, 10) || 9));
+        let minVal = Math.max(0, parseInt(this.minNumInput.value, 10) || 0);
 
-        const minTarget = Math.max(1, parseInt(this.minTargetInput.value, 10) || 100);
+
+
+
+
+        let minTarget = parseInt(this.minTargetInput.value, 10);
+        if (isNaN(minTarget) || minTarget < 1) {
+          minTarget = 1;
+          this.minTargetInput.value = 1;
+        }
         const maxTarget = Math.min(9999, Math.max(minTarget, parseInt(this.maxTargetInput.value, 10) || 999));
 
         let found = false;
@@ -1364,8 +1643,20 @@
         while (!found && attempts < 250) {
           attempts++;
           const nums = [];
-          for (let i = 0; i < count; i++) {
-            nums.push(Math.floor(Math.random() * (maxVal - minVal + 1)) + minVal);
+          const rangeSize = maxVal - minVal + 1;
+          const requireUnique = this.uniqueNumbersToggle && this.uniqueNumbersToggle.checked;
+
+          if (requireUnique && rangeSize >= count) {
+            const pool = [];
+            for (let v = minVal; v <= maxVal; v++) pool.push(v);
+            for (let i = 0; i < count; i++) {
+              const randIdx = Math.floor(Math.random() * pool.length);
+              nums.push(pool.splice(randIdx, 1)[0]);
+            }
+          } else {
+            for (let i = 0; i < count; i++) {
+              nums.push(Math.floor(Math.random() * (maxVal - minVal + 1)) + minVal);
+            }
           }
 
           if (count <= 5) {
@@ -1401,7 +1692,131 @@
         this.startTimer();
       }
 
+    
+      renderCalculatorKeypad() {
+        const grid = document.getElementById('calcKeypadGrid');
+        if (!grid) return;
+        grid.innerHTML = '';
+
+        // Extract unique generated numbers and sort them in ascending order (lowest to highest)
+        const sortedUniqueVals = Array.from(new Set(this.givenNumbers.map(n => n.val))).sort((a, b) => a - b);
+
+        // Count unused occurrences per unique number
+        const numberCounts = {};
+        sortedUniqueVals.forEach(v => numberCounts[v] = 0);
+        this.givenNumbers.filter(n => !n.used).forEach(n => {
+          numberCounts[n.val] = (numberCounts[n.val] || 0) + 1;
+        });
+
+        // 10 Number slots on the calculator grid mapped from sorted generated numbers
+        // Positions: [slot0, slot1, slot2, slot3, slot4, slot5, slot6, slot7, slot8, slot9]
+        const numSlots = [];
+        for (let i = 0; i < 10; i++) {
+          if (i < sortedUniqueVals.length) {
+            const val = sortedUniqueVals[i];
+            numSlots.push({ val: val, count: numberCounts[val] || 0, active: true });
+          } else {
+            numSlots.push({ val: '-', count: 0, active: false });
+          }
+        }
+
+        // Layout template mapping number slots to positions:
+        // Slot 6 (val 7), Slot 7 (val 8), Slot 8 (val 9) -> Row 2
+        // Slot 3 (val 4), Slot 4 (val 5), Slot 5 (val 6) -> Row 3
+        // Slot 0 (val 1), Slot 1 (val 2), Slot 2 (val 3) -> Row 4
+        // Slot 9 (val 0)                                 -> Row 5
+        const keypadLayout = [
+          [ { type: 'action', val: '⌫' }, { type: 'action', val: 'C' }, { type: 'op', val: '^' }, { type: 'op', val: '√' } ],
+          [ { type: 'numSlot', slotIdx: 6 }, { type: 'numSlot', slotIdx: 7 }, { type: 'numSlot', slotIdx: 8 }, { type: 'op', val: '÷' } ],
+          [ { type: 'numSlot', slotIdx: 3 }, { type: 'numSlot', slotIdx: 4 }, { type: 'numSlot', slotIdx: 5 }, { type: 'op', val: '×' } ],
+          [ { type: 'numSlot', slotIdx: 0 }, { type: 'numSlot', slotIdx: 1 }, { type: 'numSlot', slotIdx: 2 }, { type: 'op', val: '-' } ],
+          [ { type: 'numSlot', slotIdx: 9 }, { type: 'op', val: '(' }, { type: 'op', val: ')' }, { type: 'op', val: '+' } ]
+        ];
+
+        keypadLayout.forEach(row => {
+          row.forEach(item => {
+            const btn = document.createElement('button');
+
+            if (item.type === 'numSlot') {
+              const slot = numSlots[item.slotIdx];
+              if (slot && slot.active) {
+                const numVal = slot.val;
+                const count = slot.count;
+
+                if (count > 0) {
+                  btn.className = 'calc-btn calc-num-btn calc-num-available';
+                  btn.innerHTML = `${numVal}`;
+                  if (count > 1) {
+                    btn.innerHTML += `<sup class="calc-badge">${count}</sup>`;
+                  }
+                  btn.addEventListener('click', () => {
+                    AudioFX.playClick();
+                    const unusedItem = this.givenNumbers.find(n => !n.used && n.val === numVal);
+                    if (unusedItem) {
+                      unusedItem.used = true;
+                      this.pushToken({ type: 'num', val: numVal, id: unusedItem.id });
+                    }
+                  });
+                } else {
+                  btn.className = 'calc-btn calc-num-btn calc-num-disabled';
+                  btn.innerHTML = `${numVal}`;
+                }
+              } else {
+                btn.className = 'calc-btn calc-num-btn calc-num-disabled';
+                btn.innerHTML = `-`;
+              }
+            } else if (item.type === 'op') {
+              btn.className = 'calc-btn calc-op-btn';
+              btn.textContent = item.val;
+              btn.addEventListener('click', () => {
+                AudioFX.playClick();
+                this.pushToken({ type: 'op', val: item.val });
+              });
+            } else if (item.type === 'action') {
+              btn.className = 'calc-btn calc-action-btn';
+              btn.textContent = item.val;
+              if (item.val === '⌫') {
+                btn.addEventListener('click', () => {
+                  AudioFX.playClick();
+                  this.popToken();
+                });
+              } else if (item.val === 'C') {
+                btn.addEventListener('click', () => {
+                  AudioFX.playClick();
+                  this.clearExpression();
+                });
+              }
+            }
+
+            grid.appendChild(btn);
+          });
+        });
+      }
+
+    
+      updateBossUI(isHit = false) {
+        const titleEl = document.getElementById('bossTitle');
+        const textEl = document.getElementById('bossHpText');
+        const barEl = document.getElementById('bossHpBarInner');
+        const sectionEl = document.getElementById('bossSection');
+
+        if (titleEl) titleEl.textContent = `👾 BOSS LV.${this.bossLevel}`;
+        if (textEl) textEl.textContent = `${this.bossHp} / ${this.bossMaxHp} HP`;
+        
+        if (barEl) {
+          const pct = Math.max(0, Math.min(100, (this.bossHp / this.bossMaxHp) * 100));
+          barEl.style.width = `${pct}%`;
+        }
+
+        if (isHit && sectionEl) {
+          sectionEl.classList.remove('boss-hit-anim');
+          void sectionEl.offsetWidth;
+          sectionEl.classList.add('boss-hit-anim');
+        }
+      }
+
       render() {
+        if (this.mode === 'calc') this.renderCalculatorKeypad();
         this.targetNumEl.textContent = this.targetNumber;
 
         // Render Workspace Tiles
@@ -1588,25 +2003,58 @@
           return;
         }
 
-        if (Math.abs(res - this.targetNumber) < 1e-6) {
-          AudioFX.playSuccess();
-          if (this.timerInterval) clearInterval(this.timerInterval);
+        const diff = Math.abs(res - this.targetNumber);
+        let damage = 0;
+        let pointsEarned = 0;
 
-          this.score += 100 + (this.streak * 20);
+        if (diff < 1e-6) {
+          damage = 100;
+          pointsEarned = 100 + (this.streak * 20);
           this.streak += 1;
           this.solvedCount += 1;
-
-          this.scoreValEl.textContent = this.score;
-          this.streakValEl.textContent = this.streak;
-          this.solvedValEl.textContent = this.solvedCount;
-
-          this.showAlert(`ถูกต้องแล้วครับ! 🎉 (+${100 + ((this.streak - 1) * 20)} คะแนน) สามารถเรียงสลับรูปแบบอื่นเพิ่มได้ หรือกด "ข้อถัดไป"`, 'success');
+          AudioFX.playSuccess();
+          if (this.timerInterval) clearInterval(this.timerInterval);
         } else {
-          AudioFX.playError();
-          this.streak = 0;
-          this.streakValEl.textContent = this.streak;
-          const formatted = Number.isInteger(res) ? res : Math.round(res * 100) / 100;
-          this.showAlert(`ยังไม่ถูกต้อง! ผลลัพธ์ของคุณคือ ${formatted} (เป้าหมายคือ ${this.targetNumber})`, 'danger');
+          const accuracy = Math.max(0, Math.round(100 - diff));
+          damage = accuracy;
+          pointsEarned = accuracy;
+          if (accuracy > 0) {
+            AudioFX.playClick();
+            this.solvedCount += 1;
+          } else {
+            AudioFX.playError();
+            this.streak = 0;
+          }
+        }
+
+        this.bossHp = Math.max(0, this.bossHp - damage);
+        this.score += pointsEarned;
+
+        this.scoreValEl.textContent = this.score;
+        this.streakValEl.textContent = this.streak;
+        this.solvedValEl.textContent = this.solvedCount;
+
+        this.updateBossUI(true);
+
+        const formatted = Number.isInteger(res) ? res : Math.round(res * 100) / 100;
+
+        if (diff < 1e-6) {
+          this.showAlert(`ถูกต้องเป๊ะ! 🎉 ตี BOSS -${damage} HP (+${pointsEarned} คะแนน)`, 'success');
+        } else if (damage > 0) {
+          this.showAlert(`คำตอบคือ ${formatted} (คลาดเคลื่อน ±${Math.round(diff * 100) / 100}) ตี BOSS -${damage} HP (+${pointsEarned} คะแนน)`, 'info');
+        } else {
+          this.showAlert(`คลาดเคลื่อนมากเกินไป! ผลลัพธ์ของคุณคือ ${formatted} (เป้าหมายคือ ${this.targetNumber}) ไม่เกิดความเสียหาย (0 HP)`, 'danger');
+        }
+
+        if (this.bossHp <= 0) {
+          setTimeout(() => {
+            this.bossLevel += 1;
+            this.bossMaxHp = Math.round(this.bossMaxHp * 1.5);
+            this.bossHp = this.bossMaxHp;
+            this.updateBossUI(false);
+            AudioFX.playSuccess();
+            this.showAlert(`🎉 ปราบ BOSS LV.${this.bossLevel - 1} สำเร็จ! เลเวลอัปเป็น BOSS LV.${this.bossLevel} (HP ${this.bossMaxHp})`, 'success');
+          }, 650);
         }
       }
 
@@ -1676,6 +2124,7 @@
     document.addEventListener('DOMContentLoaded', () => {
       window.themeCtrl = new ThemeController();
       window.game = new SpeedMathGame();
+      window.modeCtrl = new ModeController(window.game);
     });
   </script>
 </body>
