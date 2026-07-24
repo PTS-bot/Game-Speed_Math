@@ -436,10 +436,10 @@
       font-size: 1.05rem;
       font-weight: 700;
       color: var(--orange-deep);
-      text-decoration: underline;
+      text-align: center;
       text-underline-offset: 4px;
       margin-top: 6px;
-      padding: 4px 10px;
+      padding: 6px 12px;
       background: var(--paper-warm);
       border: 1px dashed var(--orange);
       display: none;
@@ -1462,8 +1462,6 @@
 
     </main>
 
-    </main>
-
     <!-- STATS ROW (HIDDEN BY DEFAULT PER USER REQUEST) -->
     <div class="stats-row" style="display: none;">
       <div class="stat-card">
@@ -1605,7 +1603,7 @@
 
         <h3>⚡ 2. ระบบ Speed Attack Combo & หลอดเวลานับถอยหลัง</h3>
         <ul>
-          <li>เมื่อแก้โจทย์ข้อถัดไปได้ <b>เร็วกว่าสถิติเวลาข้อก่อนหน้า</b> ตัวคูณดาเมจจะเพิ่มขึ้น <b>+0.1x</b> ต่อเนื่อง (เช่น x1.1, x1.2, x1.3...)</li>
+          <li>เมื่อแก้โจทย์ข้อถัดไปได้ <b>เร็วกกว่าสถิติเวลาข้อก่อนหน้า</b> ตัวคูณดาเมจจะเพิ่มขึ้น <b>+0.1x</b> ต่อเนื่อง (เช่น x1.1, x1.2, x1.3...)</li>
           <li>หลอดสีส้ม Speed Combo จะนับถอยหลังตามสถิติเวลาข้อก่อนหน้า หากเวลาหมดก่อนกดตรวจคำตอบ คอมโบจะหลุด (reset เป็น x1.0)</li>
           <li>หากใช้เวลาเท่าเดิม ตัวคูณจะเท่าเดิม หากใช้เวลาช้ากว่าสถิติเดิม คอมโบจะหลุด</li>
         </ul>
@@ -2357,6 +2355,24 @@
             if (Number.isFinite(pv) && Math.abs(pv) <= 1e9) results.push(pv);
           }
 
+          // Square Root with safety bounds
+          if (num >= 0) {
+            const sqn = Math.sqrt(num);
+            results.push(currentValue + sqn);
+            results.push(currentValue - sqn);
+            results.push(sqn - currentValue);
+            results.push(currentValue * sqn);
+            if (Math.abs(sqn) > 1e-7) results.push(currentValue / sqn);
+          }
+          if (currentValue >= 0) {
+            const sqc = Math.sqrt(currentValue);
+            results.push(sqc + num);
+            results.push(sqc - num);
+            results.push(num - sqc);
+            results.push(sqc * num);
+            if (Math.abs(num) > 1e-7) results.push(sqc / num);
+          }
+
           for (const result of results) {
             if (result === null || result === undefined || !Number.isFinite(result) || Math.abs(result) > 1e9) continue;
             const bestFromHere = this.findBestAchievableResult(result, rest, target, stepCount);
@@ -2929,40 +2945,44 @@
         this.resetHintTimer();
       }
 
-      /**
-       * Renders Calculator 4x5 Keypad according to strict layout specifications:
-       * Row 1: [ ⌫ , C , ^ , ÷ ]
-       * Row 2: [ Slot 6 , Slot 7 , Slot 8 , × ]
-       * Row 3: [ Slot 3 , Slot 4 , Slot 5 , - ]
-       * Row 4: [ Slot 0 , Slot 1 , Slot 2 , + ]
-       * Row 5: [ ( , ) , √ , = ]
-       */
       renderCalculatorKeypad() {
         const grid = document.getElementById('calcKeypadGrid');
         if (!grid) return;
         grid.innerHTML = '';
 
-        const sortedUniqueVals = Array.from(new Set(this.givenNumbers.map(n => n.val))).sort((a, b) => a - b);
+        const unusedGiven = this.givenNumbers.filter(n => !n.used);
+        const unusedVals = unusedGiven.map(n => n.val).sort((a, b) => a - b);
+        const activeVars = this.subtotalSteps.filter(step => !step.used);
 
-        const numberCounts = {};
-        sortedUniqueVals.forEach(v => numberCounts[v] = 0);
-        this.givenNumbers.filter(n => !n.used).forEach(n => {
-          numberCounts[n.val] = (numberCounts[n.val] || 0) + 1;
-        });
-
-        // Map up to 9 slots (0 to 8)
+        // Build 9 slots (0 to 8)
         const numSlots = [];
-        for (let i = 0; i < 9; i++) {
-          if (i < sortedUniqueVals.length) {
-            const val = sortedUniqueVals[i];
-            numSlots.push({ val: val, count: numberCounts[val] || 0, active: true });
-          } else {
-            numSlots.push({ val: '-', count: 0, active: false });
-          }
+
+        if (unusedVals.length + activeVars.length <= 9) {
+          // Spread each unused given number and each active variable to its own dedicated slot!
+          unusedGiven.forEach(n => {
+            numSlots.push({ type: 'num', val: n.val, count: 1, active: true, id: n.id });
+          });
+          activeVars.forEach(v => {
+            numSlots.push({ type: 'var', varName: v.varName, val: v.val, active: true, varObj: v });
+          });
+        } else {
+          // Total items exceed 9 -> group numbers by value first
+          const sortedUniqueVals = Array.from(new Set(unusedVals)).sort((a, b) => a - b);
+          const numberCounts = {};
+          unusedVals.forEach(v => numberCounts[v] = (numberCounts[v] || 0) + 1);
+
+          sortedUniqueVals.forEach(v => {
+            numSlots.push({ type: 'num', val: v, count: numberCounts[v], active: true });
+          });
+          activeVars.forEach(v => {
+            numSlots.push({ type: 'var', varName: v.varName, val: v.val, active: true, varObj: v });
+          });
         }
 
-        // Active variable subtotal cards (a, b, c...) available for selection
-        const activeVars = this.subtotalSteps.filter(step => !step.used);
+        // Fill remaining slots up to 9 with empty slots
+        while (numSlots.length < 9) {
+          numSlots.push({ type: 'empty', val: '-', count: 0, active: false });
+        }
 
         // 4x5 Keypad layout grid matrix
         const keypadLayout = [
@@ -2973,11 +2993,8 @@
           [ { type: 'op', val: '(' }, { type: 'op', val: ')' }, { type: 'op', val: '√' }, { type: 'action', val: '=' } ]
         ];
 
-        // Keypad Lock Rule: If last token is NUMBER, VARIABLE, or ')', NUMBER/VAR buttons are PAUSED (Opacity 0.65 with color retained)
         const lastToken = this.expressionTokens.length > 0 ? this.expressionTokens[this.expressionTokens.length - 1] : null;
         const isLastNumOrVar = lastToken && (lastToken.type === 'num' || lastToken.type === 'var' || lastToken.val === ')');
-
-        // Active Smart Hint Highlights
         const ghostVals = (this.activeHintData && this.activeHintData.ghostTokens) ? this.activeHintData.ghostTokens.map(g => g.val) : [];
 
         keypadLayout.forEach(row => {
@@ -2988,39 +3005,41 @@
               const slot = numSlots[item.slotIdx];
 
               if (slot && slot.active) {
-                const numVal = slot.val;
-                const count = slot.count;
+                if (slot.type === 'num') {
+                  const numVal = slot.val;
+                  const count = slot.count;
 
-                if (count > 0) {
-                  if (isLastNumOrVar) {
-                    // Temporarily paused because operator is required next (Opacity 0.65 with color retained!)
-                    btn.className = `calc-btn calc-num-btn calc-num-paused`;
-                    btn.innerHTML = `${numVal}`;
-                    if (count > 1) btn.innerHTML += `<sup class="calc-badge">${count}</sup>`;
-                    btn.title = "ต้องกดเครื่องหมายคำนวณก่อนกดตัวเลขถัดไป";
+                  if (count > 0) {
+                    if (isLastNumOrVar) {
+                      btn.className = `calc-btn calc-num-btn calc-num-paused`;
+                      btn.innerHTML = `${numVal}`;
+                      if (count > 1) btn.innerHTML += `<sup class="calc-badge">${count}</sup>`;
+                      btn.title = "ต้องกดเครื่องหมายคำนวณก่อนกดตัวเลขถัดไป";
+                    } else {
+                      btn.className = `calc-btn calc-num-btn calc-num-available ${ghostVals.includes(numVal) ? 'calc-hint-highlight' : ''}`;
+                      btn.innerHTML = `${numVal}`;
+                      if (count > 1) btn.innerHTML += `<sup class="calc-badge">${count}</sup>`;
+                      btn.addEventListener('click', () => {
+                        AudioFX.playClick();
+                        let unusedItem = null;
+                        if (slot.id) {
+                          unusedItem = this.givenNumbers.find(n => n.id === slot.id && !n.used);
+                        }
+                        if (!unusedItem) {
+                          unusedItem = this.givenNumbers.find(n => !n.used && n.val === numVal);
+                        }
+                        if (unusedItem) {
+                          unusedItem.used = true;
+                          this.pushToken({ type: 'num', val: numVal, id: unusedItem.id });
+                        }
+                      });
+                    }
                   } else {
-                    // Available to press
-                    btn.className = `calc-btn calc-num-btn calc-num-available ${ghostVals.includes(numVal) ? 'calc-hint-highlight' : ''}`;
+                    btn.className = 'calc-btn calc-num-btn calc-num-disabled';
                     btn.innerHTML = `${numVal}`;
-                    if (count > 1) btn.innerHTML += `<sup class="calc-badge">${count}</sup>`;
-                    btn.addEventListener('click', () => {
-                      AudioFX.playClick();
-                      const unusedItem = this.givenNumbers.find(n => !n.used && n.val === numVal);
-                      if (unusedItem) {
-                        unusedItem.used = true;
-                        this.pushToken({ type: 'num', val: numVal, id: unusedItem.id });
-                      }
-                    });
                   }
-                } else {
-                  // Completely used up from pool
-                  btn.className = 'calc-btn calc-num-btn calc-num-disabled';
-                  btn.innerHTML = `${numVal}`;
-                }
-              } else {
-                const varIdx = item.slotIdx - sortedUniqueVals.length;
-                if (varIdx >= 0 && varIdx < activeVars.length) {
-                  const varItem = activeVars[varIdx];
+                } else if (slot.type === 'var') {
+                  const varItem = slot.varObj;
                   const hideIntermediate = this.hideIntermediateToggle && this.hideIntermediateToggle.checked;
                   if (isLastNumOrVar) {
                     btn.className = 'calc-btn calc-var-btn calc-num-paused';
@@ -3035,10 +3054,10 @@
                       this.pushToken({ type: 'var', val: varItem.varName, realVal: varItem.val, varId: varItem.varName });
                     });
                   }
-                } else {
-                  btn.className = 'calc-btn calc-num-btn calc-num-disabled';
-                  btn.innerHTML = `-`;
                 }
+              } else {
+                btn.className = 'calc-btn calc-num-btn calc-num-disabled';
+                btn.innerHTML = `-`;
               }
             } else if (item.type === 'op') {
               btn.className = `calc-btn calc-op-btn ${ghostVals.includes(item.val) ? 'calc-hint-highlight' : ''}`;
@@ -3278,10 +3297,10 @@
           });
         }
 
-        // Render Closest Solution Hint Underline Banner
+        // Render Closest Solution Hint Underline Banner (2 lines on mobile)
         if (this.closestSolBanner) {
           if (this.closestSolutionHint) {
-            this.closestSolBanner.innerHTML = `<u>เฉลยที่ใกล้เคียงที่สุด: ${this.closestSolutionHint} = ${this.targetNumber}</u>`;
+            this.closestSolBanner.innerHTML = `<div style="font-size:0.85rem; font-weight:700; color:var(--orange-deep);"><u>เฉลยที่ใกล้เคียงที่สุด:</u></div><div style="font-size:1.1rem; font-weight:700; margin-top:2px;"><u>${this.closestSolutionHint} = ${this.targetNumber}</u></div>`;
             this.closestSolBanner.classList.add('show');
           } else {
             this.closestSolBanner.innerHTML = '';
