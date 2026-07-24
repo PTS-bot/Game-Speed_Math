@@ -1510,14 +1510,14 @@
           <div class="form-group">
             <label>เป้าหมายผลลัพธ์ (1 - 9999)</label>
             <div style="display: flex; gap: 6px;">
-              <input type="number" id="minTargetInput" class="input-control" min="1" max="9999" value="100" placeholder="ต่ำสุด">
-              <input type="number" id="maxTargetInput" class="input-control" min="1" max="9999" value="999" placeholder="สูงสุด">
+              <input type="number" id="minTargetInput" class="input-control" min="1" max="9999" value="10" placeholder="ต่ำสุด">
+              <input type="number" id="maxTargetInput" class="input-control" min="1" max="9999" value="99" placeholder="สูงสุด">
             </div>
           </div>
           
           <div class="form-group">
             <label>เวลาต่อข้อ (0 = ไม่นับเวลา)</label>
-            <input type="number" id="timeLimitInput" class="input-control" min="0" max="300" value="0" placeholder="วินาที (0 = ไม่จำกัด)">
+            <input type="number" id="timeLimitInput" class="input-control" min="0" max="300" value="30" placeholder="วินาที (0 = ไม่จำกัด)">
           </div>
 
           <div class="form-group">
@@ -1536,8 +1536,14 @@
 
           <div class="form-group">
             <label class="toggle-checkbox-label">
-              <input type="checkbox" id="autoNextToggle" checked>
+              <input type="checkbox" id="autoNextToggle">
               <span>หมดเวลาเปลี่ยนข้อถัดไปทันที</span>
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="toggle-checkbox-label">
+              <input type="checkbox" id="autoFillTimeoutToggle">
+              <span>หมดเวลาแล้วเติมเลขที่เหลือด้วย + อัตโนมัติ แล้วส่งคำตอบให้เลย (ถ้าปิด จะส่งเฉพาะที่พิมพ์ไว้)</span>
             </label>
           </div>
           <div class="form-group">
@@ -1566,18 +1572,15 @@
           </div>
           <div class="form-group">
             <label class="toggle-checkbox-label">
-              <input type="checkbox" id="warningModeToggle" checked>
-              <span>แจ้งเตือนไม่ PERFECT แบบ Realtime (มุมขวาบน)</span>
+              <input type="checkbox" id="unfilteredRandomToggle" checked>
+              <span>โหมดสุ่มโจทย์แบบไม่คัดกรองคำตอบ (Unfiltered Random Mode — สุ่มเป้าหมายอิสระโดยไม่การันตีผลลัพธ์ 100%)</span>
             </label>
-            <div id="warningThresholdGroup" class="warning-threshold-group">
-              <label class="warning-threshold-label">
-                เกณฑ์เตือนผลคลาดเคลื่อนวิกฤต (±):
-              </label>
-              <div class="warning-threshold-controls">
-                <input type="range" id="warningThresholdSlider" min="1" max="200" value="100">
-                <input type="number" id="warningThresholdInput" class="input-control" min="1" max="200" value="100">
-              </div>
-            </div>
+          </div>
+          <div class="form-group">
+            <label class="toggle-checkbox-label">
+              <input type="checkbox" id="warningModeToggle" checked>
+              <span>แจ้งเตือนผลต่างคำตอบดีที่สุดแบบ Realtime (มุมขวาบน)</span>
+            </label>
           </div>
           <div class="form-group">
             <label class="toggle-checkbox-label">
@@ -1617,7 +1620,12 @@
         <h3>💡 3. ระบบคำใบ้อัจฉริยะ (Smart Hint Assist Mode)</h3>
         <ul>
           <li>หากเปิด <b>"โหมดคำใบ้อัจฉริยะ"</b> ในการตั้งค่า เมื่อคิดนานเกิน <b>5 วินาที</b> ระบบจะช่วยแนะนำตัวเลขหรือเครื่องหมายถัดไปจางๆ ที่เลือกจาก **ตัวเลขที่ยังไม่ได้ใช้เท่านั้น**</li>
-          <li>หากสมการที่ผู้เล่นกดไม่สามารถทำให้เกิดผลลัพธ์ตรงเป้าหมาย 100% ได้ จะมีป้ายเตือน <b>⚠️ ไม่ PERFECT</b> แสดงที่มุมขวาบนของกรอบแสดงผลคำนวณ</li>
+          <li>ป้ายมุมขวาบนของกรอบคำนวณจะบอกสถานะแบบเรียลไทม์ 2 แบบเท่านั้น:
+            <br>• <b>✅ PERFECT N แบบ</b> = จากเลขที่เหลืออยู่ ยังทำให้ตรงเป้าหมายได้ และมีทั้งหมด N วิธี
+            <br>• <b>❌ ใกล้สุด 183 (-30)</b> = ตรงเป้าหมายไม่ได้แล้ว โดยบอก<b>เลขผลลัพธ์ที่ใกล้ที่สุดที่ทำได้จริง</b> ไม่ต้องคำนวณย้อนกลับเอง (ในวงเล็บคือผลต่างจากเป้าหมาย) ถ้าใกล้เท่ากันทั้งสองฝั่งจะขึ้นทั้งคู่ เช่น <b>ใกล้สุด 183 หรือ 243</b></li>
+          <li>ค่าบนป้าย <b>เปลี่ยนตามเลขที่ใช้ไปแล้ว</b> เสมอ — ถ้ากดเลขแรกๆ ไม่ดี ผลต่างดีสุดก็จะห่างขึ้น</li>
+          <li>ปุ่ม <b>เฉลยหลายแบบ</b> ใช้เครื่องคำนวณตัวเดียวกับป้าย จึงตรงกันเสมอ และจะแสดง<b>ทุกวิธีที่ใกล้ที่สุด</b> ทั้งฝั่ง + และ −</li>
+          <li>คำใบ้จะ<b>เดินตามแผนเดียวกันจนจบ</b> ถ้ากดตามทุกครั้ง ผลลัพธ์สุดท้ายจะตรงกับเลขที่ป้ายบอกไว้เสมอ</li>
         </ul>
 
         <h3>🧮 4. โหมดคำนวณทีละขั้นด้วยปุ่ม = (Subtotal Mode)</h3>
@@ -1628,7 +1636,9 @@
         <h3>⏱️ 5. ระบบเติมตัวเลขและวงเล็บปิดอัตโนมัติ (Auto-Close & Timeout Auto-Submit)</h3>
         <ul>
           <li><b>การปิดวงเล็บอัตโนมัติ:</b> เริ่มต้นผู้เล่นต้องใส่วงเล็บปิด <code>)</code> ให้ถูกต้องครบคู่ (สามารถเปิดตั้งค่า "โหมดปิดวงเล็บให้อัตโนมัติ" เพิ่มเติมได้)</li>
-          <li><b>ระบบส่งคำตอบอัตโนมัติเมื่อหมดเวลา:</b> หากหมดเวลาแล้วยังมีตัวเลขที่ไม่ได้ใช้ ระบบจะเติมตัวเลขที่เหลือจากน้อยไปมากให้อัตโนมัติ และปิดวงเล็บส่งคำตอบให้อัตโนมัติทันที</li>
+          <li><b>เมื่อหมดเวลา:</b> ขึ้นกับตัวเลือก <b>"หมดเวลาแล้วเติมเลขที่เหลือด้วย + อัตโนมัติ"</b> (ค่าเริ่มต้น = ปิด)
+            <br>• <b>ปิด</b> = ถ้ายังใช้เลขไม่ครบ จะถือว่าไม่ได้ส่งคำตอบ ไม่มีการเติมเลขให้ (แต่ยังขึ้นเฉลยที่ดีที่สุดให้ดู)
+            <br>• <b>เปิด</b> = ระบบเติมเลขที่เหลือจากน้อยไปมากด้วยเครื่องหมาย + ปิดวงเล็บ แล้วส่งคำตอบให้ทันที</li>
         </ul>
       </div>
     </div>
@@ -1826,53 +1836,174 @@
      * Solver Engine supporting +, -, ×, ÷, ^, √
      */
     class MathSolver {
-      static solve(numbers, minTarget = 100, maxTarget = 999, maxSolutions = 25) {
-        const solutionsMap = new Map();
+      /**
+       * UNIFIED EXHAUSTIVE ENGINE — single source of truth for the badge,
+       * the smart hint, and the reveal panel, so they can never disagree.
+       *
+       * Bottom-up over subsets: for every subset of the items, store the set of
+       * values reachable from exactly that subset (plus one witness expression).
+       * A subset is built by splitting into two disjoint halves. This is
+       * complete (it finds every result the pairwise-combination search would)
+       * but runs in O(3^n) subset-pairs instead of exploding factorially,
+       * and dedupes by value so memory stays bounded.
+       */
+      static _enumerate(items, maxPerValue = 25) {
+        const n = items.length;
+        if (n === 0) return new Map();
 
-        function backtrack(items, stepCount = { val: 0 }) {
-          if (stepCount.val > 4000) return;
-          stepCount.val++;
+        // valueMaps[mask] = Map<roundedValue, Set<expr>>
+        const valueMaps = new Array(1 << n).fill(null);
 
-          if (items.length === 1) {
-            const v = items[0].val;
-            if (Number.isFinite(v)) {
-              const k = Math.round(v * 10000) / 10000;
-              if (!solutionsMap.has(k)) solutionsMap.set(k, new Set());
-              if (solutionsMap.get(k).size < maxSolutions) {
-                solutionsMap.get(k).add(items[0].expr);
+        for (let i = 0; i < n; i++) {
+          const m = new Map();
+          const v = Math.round(items[i].val * 10000) / 10000;
+          m.set(v, new Set([items[i].expr]));
+          valueMaps[1 << i] = m;
+        }
+
+        // Bound the value space so large boards stay realtime.
+        // Values outside [-LIMIT, LIMIT] can never usefully come back toward a
+        // 3-4 digit target, so discarding them costs no reachable answers in
+        // practice while keeping each subset's map small.
+        const LIMIT = n >= 6 ? 1e5 : 1e7;
+        const CAP = n >= 8 ? 4000 : (n === 7 ? 40000 : (n === 6 ? 60000 : 250000));
+
+        // On big boards, keep only integer-valued intermediates. Targets are
+        // always integers, and non-integer intermediates almost never lead to
+        // a strictly better final answer, so this trades a rare miss for the
+        // order-of-magnitude speedup the realtime badge needs.
+        const integersOnly = n >= 6;
+
+        const addResult = (map, val, expr) => {
+          if (!Number.isFinite(val) || Math.abs(val) > LIMIT) return;
+          if (integersOnly && Math.abs(val - Math.round(val)) > 1e-9) return;
+          const k = Math.round(val * 10000) / 10000;
+          let set = map.get(k);
+          if (!set) {
+            if (map.size >= CAP) return;
+            set = new Set();
+            map.set(k, set);
+          }
+          if (set.size < maxPerValue) set.add(expr);
+        };
+
+        // Iterate masks in order of popcount so sub-masks are ready first.
+        const masks = [];
+        for (let mask = 1; mask < (1 << n); mask++) masks.push(mask);
+        masks.sort((x, y) => {
+          const px = MathSolver._popcount(x), py = MathSolver._popcount(y);
+          return px - py || x - y;
+        });
+
+        for (const mask of masks) {
+          if (MathSolver._popcount(mask) < 2) continue;
+          const map = new Map();
+
+          // Split mask into (sub, mask^sub); iterate each unordered pair once.
+          for (let sub = (mask - 1) & mask; sub > 0; sub = (sub - 1) & mask) {
+            const other = mask ^ sub;
+            if (sub > other) continue; // unordered: handle each split once
+            const ma = valueMaps[sub];
+            const mb = valueMaps[other];
+            if (!ma || !mb) continue;
+
+            for (const [av, aset] of ma.entries()) {
+              const aexpr = aset.values().next().value;
+              for (const [bv, bset] of mb.entries()) {
+                const bexpr = bset.values().next().value;
+
+                addResult(map, av + bv, `(${aexpr} + ${bexpr})`);
+                addResult(map, av * bv, `(${aexpr} × ${bexpr})`);
+                addResult(map, av - bv, `(${aexpr} - ${bexpr})`);
+                addResult(map, bv - av, `(${bexpr} - ${aexpr})`);
+                if (Math.abs(bv) > 1e-9) addResult(map, av / bv, `(${aexpr} ÷ ${bexpr})`);
+                if (Math.abs(av) > 1e-9) addResult(map, bv / av, `(${bexpr} ÷ ${aexpr})`);
+
+                if (bv >= 0 && bv <= 5 && av > 0 && av <= 100 && Number.isInteger(bv)) {
+                  const pv = Math.pow(av, bv);
+                  if (Number.isFinite(pv) && Math.abs(pv) <= 1e7) addResult(map, pv, `(${aexpr} ^ ${bexpr})`);
+                }
+                if (av >= 0 && av <= 5 && bv > 0 && bv <= 100 && Number.isInteger(av)) {
+                  const pv = Math.pow(bv, av);
+                  if (Number.isFinite(pv) && Math.abs(pv) <= 1e7) addResult(map, pv, `(${bexpr} ^ ${aexpr})`);
+                }
               }
             }
-            return;
           }
 
-          const n = items.length;
-          for (let i = 0; i < n; i++) {
-            for (let j = 0; j < n; j++) {
-              if (i === j) continue;
-              const rem = items.filter((_, idx) => idx !== i && idx !== j);
-              const a = items[i];
-              const b = items[j];
+          valueMaps[mask] = map;
 
-              backtrack([...rem, { val: a.val + b.val, expr: `(${a.expr} + ${b.expr})` }], stepCount);
-              backtrack([...rem, { val: a.val - b.val, expr: `(${a.expr} - ${b.expr})` }], stepCount);
-              backtrack([...rem, { val: a.val * b.val, expr: `(${a.expr} × ${b.expr})` }], stepCount);
-              if (Math.abs(b.val) > 1e-7) {
-                backtrack([...rem, { val: a.val / b.val, expr: `(${a.expr} ÷ ${b.expr})` }], stepCount);
-              }
-
-              if (b.val >= 0 && b.val <= 4 && a.val > 0 && a.val <= 50) {
-                const powVal = Math.pow(a.val, b.val);
-                if (Number.isFinite(powVal) && powVal <= maxTarget) {
-                  backtrack([...rem, { val: powVal, expr: `(${a.expr} ^ ${b.expr})` }], stepCount);
-                }
+          // Intermediate subsets only ever contribute one witness expression,
+          // so drop the extras to keep memory flat.
+          if (mask !== (1 << n) - 1) {
+            for (const set of map.values()) {
+              if (set.size > 1) {
+                const first = set.values().next().value;
+                set.clear();
+                set.add(first);
               }
             }
           }
         }
 
-        const initial = numbers.map((n, i) => ({ val: n, expr: n.toString(), id: i }));
-        backtrack(initial);
-        return solutionsMap;
+        return valueMaps[(1 << n) - 1] || new Map();
+      }
+
+      static _popcount(x) {
+        let c = 0;
+        while (x) { x &= x - 1; c++; }
+        return c;
+      }
+
+      /** All values reachable using ALL of `numbers`. Memoized. */
+      static solveAll(numbers, maxSolutions = 25) {
+        const key = 'A|' + maxSolutions + '|' + [...numbers].sort((a, b) => a - b).join(',');
+        const hit = MathSolver._cache.get(key);
+        if (hit) return hit;
+        const res = MathSolver._enumerate(
+          numbers.map(n => ({ val: n, expr: n.toString() })),
+          maxSolutions
+        );
+        MathSolver._cacheStore(key, res);
+        return res;
+      }
+
+      static _cacheStore(key, val) {
+        if (MathSolver._cache.size > 40) {
+          MathSolver._cache.delete(MathSolver._cache.keys().next().value);
+        }
+        MathSolver._cache.set(key, val);
+      }
+
+      /** Backwards-compatible wrapper (range args ignored). */
+      static solve(numbers, minTarget = 100, maxTarget = 999, maxSolutions = 25) {
+        return MathSolver.solveAll(numbers, maxSolutions);
+      }
+
+      /**
+       * All values reachable from a LOCKED partial value plus the remaining
+       * numbers. The prefix is just another item that must be consumed.
+       */
+      static solveFrom(currentValue, remainingNums, prefixLabel = '…', maxSolutions = 25) {
+        const key = 'F|' + maxSolutions + '|' + Math.round(currentValue * 10000) +
+                    '|' + [...remainingNums].sort((a, b) => a - b).join(',');
+        const hit = MathSolver._cache.get(key);
+        if (hit) return MathSolver._relabel(hit, prefixLabel);
+        const items = [{ val: currentValue, expr: '\u0000PFX' }]
+          .concat(remainingNums.map(n => ({ val: n, expr: n.toString() })));
+        const res = MathSolver._enumerate(items, maxSolutions);
+        MathSolver._cacheStore(key, res);
+        return MathSolver._relabel(res, prefixLabel);
+      }
+
+      static _relabel(map, prefixLabel) {
+        const out = new Map();
+        for (const [k, set] of map.entries()) {
+          const ns = new Set();
+          for (const e of set) ns.add(e.split('\u0000PFX').join(prefixLabel));
+          out.set(k, ns);
+        }
+        return out;
       }
 
       static generateTarget(numbers, minTarget = 100, maxTarget = 999) {
@@ -1933,6 +2064,251 @@
       }
     }
 
+    MathSolver._cache = new Map();
+
+    /**
+     * LINEAR CONTINUATION SOLVER — models EXACTLY how this game evaluates.
+     *
+     * The player types a flat token stream (no auto-parentheses) and the game
+     * evaluates it with normal operator precedence, and REQUIRES every given
+     * number to be used. So the only honest way to answer "what can I still
+     * reach from here?" is to enumerate the real continuations: every ordering
+     * of the unused numbers, every operator between them, evaluated with
+     * precedence.
+     *
+     * State is a small operator-precedence machine (see `step` below) that
+     * reproduces JavaScript's precedence and associativity exactly, so a value
+     * the badge promises is always a value the player can actually type.
+     */
+    class LinearSolver {
+      static OPS = ['+', '-', '×', '÷', '^'];
+
+      /**
+       * State is a tiny operator-precedence machine that mirrors JavaScript
+       * exactly for + - × ÷ ^ :
+       *   addStack  - completed additive terms (already signed)
+       *   mulChain  - the multiplicative chain being built, as factors, where
+       *               each factor records whether it is multiplied or divided
+       *   powChain  - the exponent chain on the newest factor (^ is
+       *               right-associative, so it is resolved from the right)
+       * Nothing is collapsed early, so precedence and associativity are exact.
+       */
+      static seed(n) {
+        return { add: [], addSum: 0, sign: 1, mul: [], mulDivPending: false, pow: [n] };
+      }
+
+      /** Collapse a right-associative exponent chain: a^b^c = a^(b^c). */
+      static _resolvePow(chain) {
+        let v = chain[chain.length - 1];
+        for (let i = chain.length - 2; i >= 0; i--) {
+          const base = chain[i];
+          if (base === 0 && v < 0) return null;
+          v = Math.pow(base, v);
+          if (!Number.isFinite(v) || Math.abs(v) > 1e12) return null;
+        }
+        return v;
+      }
+
+      /** Collapse the multiplicative chain (factors + the live power chain). */
+      static _resolveMul(st) {
+        const last = LinearSolver._resolvePow(st.pow);
+        if (last === null) return null;
+        let v = 1;
+        for (const f of st.mul) {
+          if (f.div) {
+            if (Math.abs(f.v) < 1e-12) return null;
+            v /= f.v;
+          } else v *= f.v;
+        }
+        // apply the newest factor with its own div flag
+        if (st.mulDivPending) {
+          if (Math.abs(last) < 1e-12) return null;
+          v /= last;
+        } else v *= last;
+        return v;
+      }
+
+      /** Total value of the state. */
+      static value(st) {
+        const m = LinearSolver._resolveMul(st);
+        if (m === null) return NaN;
+        return st.addSum + st.sign * m;
+      }
+
+      /** Apply one (op, number) step. Returns a new state, or null if illegal. */
+      static step(st, op, n) {
+        const clone = () => ({
+          add: st.add,
+          addSum: st.addSum,
+          sign: st.sign,
+          mul: st.mul,
+          mulDivPending: st.mulDivPending,
+          pow: st.pow
+        });
+
+        if (op === '^') {
+          if (n < 0 || n > 6) return null;
+          const ns = clone();
+          ns.pow = st.pow.concat([n]);
+          if (LinearSolver._resolvePow(ns.pow) === null) return null;
+          return ns;
+        }
+
+        if (op === '×' || op === '÷') {
+          // close the current power chain into a factor
+          const last = LinearSolver._resolvePow(st.pow);
+          if (last === null) return null;
+          const ns = clone();
+          ns.mul = st.mul.concat([{ v: last, div: !!st.mulDivPending }]);
+          ns.mulDivPending = (op === '÷');
+          if (op === '÷' && Math.abs(n) < 1e-12) return null;
+          ns.pow = [n];
+          return ns;
+        }
+
+        if (op === '+' || op === '-') {
+          const m = LinearSolver._resolveMul(st);
+          if (m === null || !Number.isFinite(m)) return null;
+          return {
+            add: st.add,
+            addSum: st.addSum + st.sign * m,
+            sign: (op === '+') ? 1 : -1,
+            mul: [],
+            mulDivPending: false,
+            pow: [n]
+          };
+        }
+
+        return null;
+      }
+
+      /**
+       * Replay an already-typed token list into a state.
+       * Returns null if the tokens use parentheses/roots (which this linear
+       * model cannot represent) or are malformed — caller then falls back.
+       */
+      static replay(tokens, variableMap) {
+        if (!tokens || tokens.length === 0) return null;
+        let st = null;
+        let pendingOp = null;
+        for (const t of tokens) {
+          if (t.type === 'op') {
+            if (t.val === '(' || t.val === ')' || t.val === '√') return null;
+            if (st === null) return null;
+            if (pendingOp !== null) return null;
+            pendingOp = t.val;
+          } else {
+            let v = t.val;
+            if (t.type === 'var') {
+              v = (t.realVal !== undefined) ? t.realVal
+                : (variableMap && variableMap[t.val] !== undefined ? variableMap[t.val] : null);
+              if (v === null) return null;
+            }
+            if (typeof v !== 'number' || !Number.isFinite(v)) return null;
+            if (st === null) { st = LinearSolver.seed(v); }
+            else {
+              if (pendingOp === null) return null;
+              st = LinearSolver.step(st, pendingOp, v);
+              if (!st) return null;
+              pendingOp = null;
+            }
+          }
+        }
+        return { state: st, pendingOp };
+      }
+
+      /**
+       * Enumerate every value reachable by consuming ALL of `nums`.
+       * Returns Map<roundedValue, tokenPath[]> where tokenPath is the list of
+       * {op, num} steps to append. Only complete consumptions are recorded,
+       * because the game refuses an answer that leaves numbers unused.
+       */
+      static reachable(startState, nums, opts = {}) {
+        const budget = opts.budget || 400000;
+        const maxPaths = opts.maxPaths || 6;
+        const results = new Map();
+        const seen = new Set();
+        let nodes = 0;
+        const n = nums.length;
+
+        const record = (val, path) => {
+          if (!Number.isFinite(val)) return;
+          const k = Math.round(val * 1e6) / 1e6;
+          let arr = results.get(k);
+          if (!arr) { arr = []; results.set(k, arr); }
+          if (arr.length < maxPaths) arr.push(path.slice());
+        };
+
+        const path = [];
+        const used = new Array(n).fill(false);
+
+        const dfs = (st, remaining) => {
+          if (nodes++ > budget) return;
+          if (remaining === 0) { record(LinearSolver.value(st), path); return; }
+
+          // Dedupe: same numbers left + same arithmetic state => same futures.
+          let mask = 0;
+          for (let i = 0; i < n; i++) if (!used[i]) mask |= (1 << i);
+          const mulPart = LinearSolver._resolveMul(st);
+          if (mulPart === null || !Number.isFinite(mulPart)) return;
+          const key = mask + '|' + Math.round(st.addSum * 1e4) + '|' + st.sign + '|' +
+                      Math.round(mulPart * 1e4) + '|' +
+                      Math.round(st.pow[st.pow.length - 1] * 1e4) + '|' +
+                      (st.mulDivPending ? 1 : 0) + '|' + st.pow.length + '|' + st.mul.length;
+          if (seen.has(key)) return;
+          seen.add(key);
+
+          const triedValues = new Set();
+          for (let i = 0; i < n; i++) {
+            if (used[i]) continue;
+            // Identical duplicate numbers at the same depth are interchangeable.
+            const vkey = nums[i];
+            if (triedValues.has(vkey)) continue;
+            triedValues.add(vkey);
+
+            used[i] = true;
+            for (const op of LinearSolver.OPS) {
+              const ns = LinearSolver.step(st, op, nums[i]);
+              if (!ns) continue;
+              path.push({ op, num: nums[i], idx: i });
+              dfs(ns, remaining - 1);
+              path.pop();
+            }
+            used[i] = false;
+          }
+        };
+
+        if (startState === null) {
+          // Nothing typed yet: every number can be the opening token.
+          const triedSeed = new Set();
+          for (let i = 0; i < n; i++) {
+            if (triedSeed.has(nums[i])) continue;
+            triedSeed.add(nums[i]);
+            used[i] = true;
+            path.push({ op: null, num: nums[i], idx: i });
+            dfs(LinearSolver.seed(nums[i]), n - 1);
+            path.pop();
+            used[i] = false;
+          }
+        } else {
+          dfs(startState, n);
+        }
+
+        return results;
+      }
+
+      /** Render a token path into a readable expression string. */
+      static pathToString(prefixStr, path) {
+        let out = prefixStr || '';
+        for (const stp of path) {
+          if (stp.op === null) out += (out ? ' ' : '') + stp.num;
+          else out += ` ${stp.op} ${stp.num}`;
+        }
+        return out.trim();
+      }
+    }
+
+
     /**
      * Cross-Platform Speed Math Controller
      */
@@ -1953,8 +2329,11 @@
 
         // Smart Hint Engine Timer & Active State
         this.hintTimer = null;
+        this.warnTimer = null;
+        this.badgePending = false;
         this.activeHintData = null;
         this.closestSolutionHint = null;
+        this.bestSolutionInfo = null;
         this.isPerfectPath = true;
         this.perfectWaysCount = null;
         this.bestAchievableDiff = null;
@@ -1994,14 +2373,14 @@
 
         this.timeLimitInput = document.getElementById('timeLimitInput');
         this.autoNextToggle = document.getElementById('autoNextToggle');
+        this.autoFillTimeoutToggle = document.getElementById('autoFillTimeoutToggle');
         this.uniqueNumbersToggle = document.getElementById('uniqueNumbersToggle');
         this.hideIntermediateToggle = document.getElementById('hideIntermediateToggle');
         this.autoCloseParenthesesToggle = document.getElementById('autoCloseParenthesesToggle');
         this.subtotalModeToggle = document.getElementById('subtotalModeToggle');
         this.hintModeToggle = document.getElementById('hintModeToggle');
         this.warningModeToggle = document.getElementById('warningModeToggle');
-        this.warningThresholdSlider = document.getElementById('warningThresholdSlider');
-        this.warningThresholdInput = document.getElementById('warningThresholdInput');
+        this.unfilteredRandomToggle = document.getElementById('unfilteredRandomToggle');
         this.timerValEl = document.getElementById('timerVal');
         this.showStatsToggle = document.getElementById('showStatsToggle');
         this.timerBadgeToggle = document.getElementById('timerBadgeToggle');
@@ -2202,16 +2581,29 @@
 
         this.activeHintData = null;
 
-        // REAL-TIME: Immediately compute warning badge (no delay!)
+        // Any edit invalidates a cached hint plan that no longer matches.
+        if (this._planKey !== null && this._planKey !== undefined) {
+          const k = this.givenNumbers.filter(n => n.used).length + '/' + this.expressionTokens.length;
+          if (k !== this._planKey) { this._planRemaining = null; this._planKey = null; }
+        }
+
+        // REAL-TIME badge: compute on a short debounce so rapid typing
+        // never blocks the UI while the solver runs.
         const warningEnabled = this.warningModeToggle && this.warningModeToggle.checked;
         if (warningEnabled) {
-          this.computePathWarning();
+          if (this.warnTimer) clearTimeout(this.warnTimer);
+          this.badgePending = true;
+          this.render();
+          this.warnTimer = setTimeout(() => {
+            this.badgePending = false;
+            this.computePathWarning();
+            this.render();
+          }, 90);
         } else {
           this.isPerfectPath = true;
           this.bestAchievableDiff = null;
+          this.render();
         }
-
-        this.render();
 
         // DELAYED: Set 5-second timer for ghost hint tokens
         const hintEnabled = this.hintModeToggle && this.hintModeToggle.checked;
@@ -2228,55 +2620,13 @@
        */
       computePathWarning() {
         if (this.isSolutionRevealed || this.isAnswerChecked) return;
-        if (!this.solutionsSet || this.solutionsSet.size === 0) return;
 
-        const userTokens = this.expressionTokens;
-        const solutions = Array.from(this.solutionsSet);
-        const parseSolution = (exprStr) => {
-          const cleaned = MathSolver.cleanExpression(exprStr);
-          const regex = /(\d+|[+\-×÷^√()])/g;
-          const matches = cleaned.match(regex) || [];
-          return matches.map(m => {
-            if (/^\d+$/.test(m)) return { type: 'num', val: parseInt(m, 10) };
-            return { type: 'op', val: m };
-          });
-        };
-
-        const parsedSolutions = solutions.map(s => parseSolution(s));
-
-        // Filter matching pre-computed solution paths
-        let matchingSols = [];
-        if (userTokens.length === 0) {
-          matchingSols = parsedSolutions;
-        } else {
-          matchingSols = parsedSolutions.filter(sol => {
-            if (sol.length < userTokens.length) return false;
-            for (let i = 0; i < userTokens.length; i++) {
-              const u = userTokens[i];
-              const s = sol[i];
-              let uVal = u.val;
-              if (u.type === 'var' && u.realVal !== undefined) uVal = u.realVal;
-              if (u.type === 'num' || u.type === 'var') {
-                if (s.type !== 'num' || s.val !== uVal) return false;
-              } else if (u.type === 'op') {
-                if (s.type !== 'op' || s.val !== u.val) return false;
-              }
-            }
-            return true;
-          });
-        }
-
-        // Always calculate mini-solver bestAchievableDiff to verify alternative 100% paths
+        // One engine decides everything: is 0 reachable from HERE?
         this._computeBestAchievableDiff();
 
-        if (matchingSols.length > 0) {
+        if (this.bestAchievableDiff === 0) {
           this.isPerfectPath = true;
-          this.perfectWaysCount = matchingSols.length;
-          this.bestAchievableDiff = 0;
-        } else if (this.bestAchievableDiff === 0) {
-          // Alternative path (e.g. subtotal variable or different operation order) that achieves 100% target!
-          this.isPerfectPath = true;
-          this.perfectWaysCount = 1;
+          this.perfectWaysCount = this._countPerfectWays();
         } else {
           this.isPerfectPath = false;
           this.perfectWaysCount = 0;
@@ -2284,296 +2634,185 @@
       }
 
       /**
-       * Helper: Compute best achievable diff from current state using mini-solver
+       * SINGLE SOURCE OF TRUTH.
+       * Enumerates every completion reachable from the CURRENT board state
+       * (locked prefix value + unused numbers + unused subtotal vars) and
+       * caches the full result map. Badge, hint and reveal all read this.
        */
-      _computeBestAchievableDiff() {
-        const unusedNums = this.givenNumbers.filter(n => !n.used);
-        const unusedVars = this.subtotalSteps.filter(s => !s.used);
-        const remainingVals = [
-          ...unusedNums.map(n => n.val),
-          ...unusedVars.map(v => v.val)
-        ];
+      _computeReachable() {
+        const unusedNums = this.givenNumbers.filter(n => !n.used).map(n => n.val);
+        const unusedVars = this.subtotalSteps.filter(v => !v.used).map(v => v.val);
+        const remainingVals = [...unusedNums, ...unusedVars];
+
+        const replayed = LinearSolver.replay(this.expressionTokens, this.variableMap);
+
+        let startState = null;
+        let prefixStr = '';
+
+        if (this.expressionTokens.length > 0) {
+          if (replayed) {
+            startState = replayed.state;
+            const cut = (replayed.pendingOp !== null)
+              ? this.expressionTokens.length - 1
+              : this.expressionTokens.length;
+            prefixStr = this.expressionTokens.slice(0, cut).map(t => t.val).join(' ');
+          } else {
+            // Tokens use parentheses / √ that the linear model can't express.
+            // Fall back to locking the current value as a seed.
+            const cur = this.evaluateExpression();
+            if (cur === null || !Number.isFinite(cur)) {
+              this.reachableMap = new Map();
+              this.reachablePrefix = '';
+              return this.reachableMap;
+            }
+            startState = LinearSolver.seed(cur);
+            prefixStr = this.expressionTokens.map(t => t.val).join(' ');
+          }
+        }
 
         if (remainingVals.length === 0) {
-          const currentVal = this.evaluateExpression();
-          this.bestAchievableDiff = (currentVal !== null && Number.isFinite(currentVal))
-            ? Math.abs(currentVal - this.targetNumber)
-            : Infinity;
+          const map = new Map();
+          if (startState) map.set(Math.round(LinearSolver.value(startState) * 1e6) / 1e6, [[]]);
+          this.reachableMap = map;
+          this.reachablePrefix = prefixStr;
+          return map;
+        }
+
+        const budget = remainingVals.length >= 7 ? 300000 : 400000;
+        this.reachableMap = LinearSolver.reachable(startState, remainingVals, { budget, maxPaths: 6 });
+        this.reachablePrefix = prefixStr;
+        return this.reachableMap;
+      }
+
+      /**
+       * Compute best achievable diff + signed badge text from the reachable map.
+       * Only INTEGER-valued results count, matching what the reveal panel shows.
+       */
+      _computeBestAchievableDiff() {
+        const map = this._computeReachable();
+        const target = this.targetNumber;
+
+        let minDiff = Infinity;
+        for (const val of map.keys()) {
+          if (!Number.isFinite(val)) continue;
+          if (Math.abs(val - Math.round(val)) > 1e-6) continue; // integers only
+          const d = Math.abs(Math.round(val) - target);
+          if (d < minDiff) minDiff = d;
+        }
+
+        if (minDiff === Infinity) {
+          this.bestAchievableDiff = Infinity;
+          this.bestAchievableValues = [];
+          this.bestAchievableBadgeText = '?';
           return;
         }
 
-        const currentVal = this.evaluateExpression();
-
-        if (currentVal !== null && Number.isFinite(currentVal)) {
-          // Expression has a value → combine with remaining items
-          const stepCount = { val: 0 };
-          const best = this.findBestAchievableResult(currentVal, remainingVals, this.targetNumber, stepCount);
-          this.bestAchievableDiff = Math.abs(best - this.targetNumber);
-        } else if (this.expressionTokens.length === 0) {
-          // No expression yet → try each item as start and solve with rest
-          let bestDiff = Infinity;
-          for (let i = 0; i < remainingVals.length; i++) {
-            const startVal = remainingVals[i];
-            const rest = [...remainingVals.slice(0, i), ...remainingVals.slice(i + 1)];
-            const stepCount = { val: 0 };
-            const best = this.findBestAchievableResult(startVal, rest, this.targetNumber, stepCount);
-            const diff = Math.abs(best - this.targetNumber);
-            if (diff < bestDiff) bestDiff = diff;
-          }
-          this.bestAchievableDiff = bestDiff;
-        } else {
-          this.bestAchievableDiff = Infinity;
+        const vals = [];
+        for (const val of map.keys()) {
+          if (Math.abs(val - Math.round(val)) > 1e-6) continue;
+          const v = Math.round(val);
+          if (Math.abs(v - target) === minDiff) vals.push(v);
         }
+        vals.sort((x, y) => x - y);
+
+        this.bestAchievableDiff = minDiff;
+        this.bestAchievableValues = vals;
+
+        if (minDiff === 0) { this.bestAchievableBadgeText = '0'; return; }
+        const canPos = vals.some(v => v > target);
+        const canNeg = vals.some(v => v < target);
+        this.bestAchievableBadgeText = (canPos && canNeg)
+          ? `±${minDiff}` : (canPos ? `+${minDiff}` : `-${minDiff}`);
       }
 
       /**
-       * SMART HINT RECOMMENDATION ENGINE
-       * Always recommends the NEXT best token strictly selected from UNUSED numbers remaining in pool.
-       * Displays '⚠️ ไม่ PERFECT' badge in top-right corner if prefix strays from 100% solution.
+       * Count of DISTINCT expressions that hit the target exactly from here.
        */
-      /**
-       * DEEP LOOK-AHEAD MINI-SOLVER: finds best achievable result
-       * by combining currentValue with remainingNums using all operator orderings.
-       */
-      findBestAchievableResult(currentValue, remainingNums, target, stepCount) {
-        if (remainingNums.length === 0 || stepCount.val > 50000) {
-          return currentValue;
-        }
-
-        let bestVal = currentValue;
-        let bestDiff = Math.abs(currentValue - target);
-
-        for (let i = 0; i < remainingNums.length; i++) {
-          const num = remainingNums[i];
-          const rest = [...remainingNums.slice(0, i), ...remainingNums.slice(i + 1)];
-          stepCount.val++;
-
-          const results = [
-            currentValue + num,
-            currentValue - num,
-            num - currentValue,
-            currentValue * num,
-          ];
-
-          if (Math.abs(num) > 1e-7) results.push(currentValue / num);
-          if (Math.abs(currentValue) > 1e-7) results.push(num / currentValue);
-
-          // Power with safety bounds
-          if (num >= 0 && num <= 10 && Math.abs(currentValue) > 0 && Math.abs(currentValue) <= 200) {
-            const pv = Math.pow(currentValue, num);
-            if (Number.isFinite(pv) && Math.abs(pv) <= 1e9) results.push(pv);
-          }
-          if (currentValue >= 0 && currentValue <= 10 && Math.abs(num) > 0 && Math.abs(num) <= 200) {
-            const pv = Math.pow(num, currentValue);
-            if (Number.isFinite(pv) && Math.abs(pv) <= 1e9) results.push(pv);
-          }
-
-          // Square Root with safety bounds
-          if (num >= 0) {
-            const sqn = Math.sqrt(num);
-            results.push(currentValue + sqn);
-            results.push(currentValue - sqn);
-            results.push(sqn - currentValue);
-            results.push(currentValue * sqn);
-            if (Math.abs(sqn) > 1e-7) results.push(currentValue / sqn);
-          }
-          if (currentValue >= 0) {
-            const sqc = Math.sqrt(currentValue);
-            results.push(sqc + num);
-            results.push(sqc - num);
-            results.push(num - sqc);
-            results.push(sqc * num);
-            if (Math.abs(num) > 1e-7) results.push(sqc / num);
-          }
-
-          for (const result of results) {
-            if (result === null || result === undefined || !Number.isFinite(result) || Math.abs(result) > 1e9) continue;
-            const bestFromHere = this.findBestAchievableResult(result, rest, target, stepCount);
-            const diff = Math.abs(bestFromHere - target);
-            if (diff < bestDiff) {
-              bestDiff = diff;
-              bestVal = bestFromHere;
-            }
-          }
-        }
-
-        return bestVal;
+      _countPerfectWays() {
+        const map = this.reachableMap || this._computeReachable();
+        const arr = map.get(Math.round(this.targetNumber * 1e6) / 1e6);
+        return arr ? arr.length : 0;
       }
 
+      /**
+       * SMART HINT — derived from the SAME engine as the badge.
+       * Picks the reachable value with the smallest |diff| (integers preferred),
+       * then suggests the next legal token(s) toward it.
+       */
+      /**
+       * SMART HINT — reads the actual winning continuation.
+       * The badge already enumerated every real continuation and stored the
+       * exact token path for each reachable value, so the hint just picks the
+       * best-scoring path and reveals its next step. It is therefore always
+       * followable and always consistent with the badge.
+       */
       computeSmartHint() {
         if (this.isSolutionRevealed || this.isAnswerChecked) return;
-        if (!this.solutionsSet || this.solutionsSet.size === 0) return;
 
-        const userTokens = this.expressionTokens;
-        const solutions = Array.from(this.solutionsSet);
+        this._computeBestAchievableDiff();
+        const map = this.reachableMap || new Map();
+        const target = this.targetNumber;
 
-        // Helper to parse solution string into structured tokens
-        const parseSolution = (exprStr) => {
-          const cleaned = MathSolver.cleanExpression(exprStr);
-          const regex = /(\d+|[+\-×÷^√()])/g;
-          const matches = cleaned.match(regex) || [];
-          return matches.map(m => {
-            if (/^\d+$/.test(m)) return { type: 'num', val: parseInt(m, 10) };
-            return { type: 'op', val: m };
-          });
-        };
+        if (map.size === 0) { this.activeHintData = null; this.render(); return; }
 
-        const parsedSolutions = solutions.map(s => parseSolution(s));
+        // Best reachable value (integers preferred, ties broken by closeness).
+        let bestVal = null, bestDiff = Infinity;
+        for (const val of map.keys()) {
+          if (!Number.isFinite(val)) continue;
+          if (Math.abs(val - Math.round(val)) > 1e-6) continue;
+          const d = Math.abs(Math.round(val) - target);
+          if (d < bestDiff) { bestDiff = d; bestVal = val; }
+        }
+        if (bestVal === null) { this.activeHintData = null; this.render(); return; }
 
-        // If subtotal variables exist, original solutions don't apply → skip perfect-path check
-        const hasSubtotalVars = this.subtotalSteps.length > 0;
-
-        // Case A: User has not entered any tokens yet
-        if (userTokens.length === 0) {
-          if (!hasSubtotalVars) {
-            // No subtotals → use original solutions
-            this.isPerfectPath = true;
-            this.bestAchievableDiff = 0;
-            const bestSol = parsedSolutions[0];
-            if (bestSol && bestSol.length > 0) {
-              const ghost1 = bestSol[0];
-              const ghost2 = bestSol.length > 1 ? bestSol[1] : null;
-              this.activeHintData = {
-                type: 'suggest',
-                ghostTokens: [ghost1, ghost2].filter(Boolean)
-              };
-            }
-            this.render();
-            return;
-          }
-          // Has subtotals → fall through to non-perfect path with mini-solver
+        const paths = map.get(bestVal);
+        if (!paths || paths.length === 0 || paths[0].length === 0) {
+          this.activeHintData = null; this.render(); return;
         }
 
-        // Case B: Check if user tokens form an exact prefix match (skip if subtotal mode)
-        let matchingSols = [];
-        if (!hasSubtotalVars && userTokens.length > 0) {
-          matchingSols = parsedSolutions.filter(sol => {
-            if (sol.length < userTokens.length) return false;
-            for (let i = 0; i < userTokens.length; i++) {
-              const u = userTokens[i];
-              const s = sol[i];
-              let uVal = u.val;
-              if (u.type === 'var' && u.realVal !== undefined) uVal = u.realVal;
+        // Commit to ONE plan and keep following it. Re-planning from scratch
+        // on every step can flip to a different branch when the search is
+        // truncated on large boards, which would drift away from what the
+        // badge promised. We cache the remaining plan and only rebuild it when
+        // it no longer matches what the player actually typed.
+        let path = paths[0];
+        const usedKey = this.givenNumbers.filter(n => n.used).length +
+                        '/' + this.expressionTokens.length;
 
-              if (u.type === 'num' || u.type === 'var') {
-                if (s.type !== 'num' || s.val !== uVal) return false;
-              } else if (u.type === 'op') {
-                if (s.type !== 'op' || s.val !== u.val) return false;
-              }
-            }
-            return true;
-          });
-        }
-
-        if (matchingSols.length > 0) {
-          // Exact 100% match path!
-          this.isPerfectPath = true;
-          this.bestAchievableDiff = 0;
-          const sol = matchingSols[0];
-          const nextIdx = userTokens.length;
-          const ghost1 = sol[nextIdx] || null;
-          const ghost2 = sol[nextIdx + 1] || null;
-          this.activeHintData = {
-            type: 'suggest',
-            ghostTokens: [ghost1, ghost2].filter(Boolean)
-          };
+        if (this._planRemaining && this._planRemaining.length > 0 &&
+            this._planTarget === target && this._planKey === usedKey) {
+          path = this._planRemaining;
         } else {
-          // User prefix strays from 100% solution -> Show warning badge!
-          this.isPerfectPath = false;
-
-          // STRICT FILTER: Remaining UNUSED numbers and variables ONLY!
-          const unusedNums = this.givenNumbers.filter(n => !n.used);
-          const unusedVars = this.subtotalSteps.filter(s => !s.used);
-
-          // Build remaining items list (values only, for mini-solver)
-          const remainingItems = [];
-          unusedNums.forEach(n => remainingItems.push({ val: n.val, type: 'num', id: n.id }));
-          unusedVars.forEach(v => remainingItems.push({ val: v.val, type: 'var', varName: v.varName }));
-
-          // If NO numbers/vars remain, do NOT suggest operators — nothing left to operate on!
-          if (remainingItems.length === 0) {
-            // Just compute best achievable diff from current expression
-            const currentVal = this.evaluateExpression();
-            this.bestAchievableDiff = (currentVal !== null && Number.isFinite(currentVal))
-              ? Math.abs(currentVal - this.targetNumber)
-              : Infinity;
-            this.activeHintData = null;
-            this.render();
-            return;
-          }
-
-          const lastToken = userTokens[userTokens.length - 1];
-          const isLastNumOrVar = lastToken && (lastToken.type === 'num' || lastToken.type === 'var' || lastToken.val === ')');
-          const ops = ['+', '-', '×', '÷', '^'];
-
-          let bestCandidateTokens = null;
-          let bestAchievableDiff = Infinity;
-
-          if (isLastNumOrVar) {
-            // Must recommend OPERATOR next — use 2-step look-ahead (op + number)
-            // For each (op, num) pair, evaluate and then run mini-solver on remaining
-            for (const opVal of ops) {
-              for (let i = 0; i < remainingItems.length; i++) {
-                const item = remainingItems[i];
-                const numToken = item.type === 'var'
-                  ? { type: 'var', val: item.varName, realVal: item.val }
-                  : { type: 'num', val: item.val };
-
-                const testTokens = [...userTokens, { type: 'op', val: opVal }, numToken];
-                const evalVal = this.evaluateTokensPartial(testTokens);
-
-                if (evalVal !== null && Number.isFinite(evalVal)) {
-                  // Run mini-solver on remaining numbers (minus this one)
-                  const remainingAfter = remainingItems.filter((_, idx) => idx !== i).map(r => r.val);
-                  const stepCount = { val: 0 };
-                  const bestFinal = this.findBestAchievableResult(evalVal, remainingAfter, this.targetNumber, stepCount);
-                  const diff = Math.abs(bestFinal - this.targetNumber);
-
-                  if (diff < bestAchievableDiff) {
-                    bestAchievableDiff = diff;
-                    bestCandidateTokens = [{ type: 'op', val: opVal }, numToken];
-                  }
-                }
-              }
-            }
-          } else {
-            // Must recommend NUMBER/VAR next — try each remaining number
-            // For each number, evaluate it and run mini-solver on the rest
-            for (let i = 0; i < remainingItems.length; i++) {
-              const item = remainingItems[i];
-              const numToken = item.type === 'var'
-                ? { type: 'var', val: item.varName, realVal: item.val }
-                : { type: 'num', val: item.val };
-
-              const testTokens = [...userTokens, numToken];
-              const evalVal = this.evaluateTokensPartial(testTokens);
-
-              if (evalVal !== null && Number.isFinite(evalVal)) {
-                const remainingAfter = remainingItems.filter((_, idx) => idx !== i).map(r => r.val);
-                const stepCount = { val: 0 };
-                const bestFinal = this.findBestAchievableResult(evalVal, remainingAfter, this.targetNumber, stepCount);
-                const diff = Math.abs(bestFinal - this.targetNumber);
-
-                if (diff < bestAchievableDiff) {
-                  bestAchievableDiff = diff;
-                  bestCandidateTokens = [numToken];
-                }
-              }
-            }
-          }
-
-          this.bestAchievableDiff = bestAchievableDiff;
-
-          if (bestCandidateTokens) {
-            this.activeHintData = {
-              type: 'suggest',
-              ghostTokens: bestCandidateTokens
-            };
-          } else {
-            this.activeHintData = null;
-          }
+          this._planTarget = target;
         }
 
+        // Store the tail so the next call continues this same plan.
+        const consumed = (path[0] && path[0].op === null) ? 1 : 1;
+        this._planRemaining = path.slice(consumed);
+        this._planKey = (this.givenNumbers.filter(n => n.used).length + 1) +
+                        '/' + (this.expressionTokens.length +
+                               ((path[0] && path[0].op === null) ? 1 : 2));
+
+        const ghostTokens = [];
+
+        // Reveal ONLY the next step of the winning path. A step is either the
+        // opening number (op === null) or an operator followed by its number.
+        // Emitting anything beyond one step would duplicate the operator on the
+        // following call, so we stop here.
+        const first = path[0];
+        if (first.op === null) {
+          ghostTokens.push({ type: 'num', val: first.num });
+        } else {
+          ghostTokens.push({ type: 'op', val: first.op });
+          ghostTokens.push({ type: 'num', val: first.num });
+        }
+
+        this.activeHintData = {
+          type: 'suggest',
+          ghostTokens,
+          fullPath: LinearSolver.pathToString(this.reachablePrefix, path),
+          targetVal: Math.round(bestVal)
+        };
         this.render();
       }
 
@@ -2602,42 +2841,80 @@
         }
       }
 
-      findClosestSolution() {
-        if (!this.solutionsSet || this.solutionsSet.size === 0) return null;
+      /**
+       * After the player submits, find the BEST possible answer to show them —
+       * but only ONE, and specifically the one that is closest to what they
+       * actually typed, so the correction is easy to read as "you were nearly
+       * there, just change this bit".
+       *
+       * "Closest" is measured on the typed sequence itself: same numbers in the
+       * same order and same operators score 0 changes; each differing slot
+       * counts as one change. Among all optimal answers we return the minimum.
+       * Returns { expr, val, diff, changes } or null.
+       */
+      findBestSolutionNearestToUser() {
+        const nums = this.givenNumbers.map(n => n.val);
+        if (nums.length === 0) return null;
 
-        const solutions = Array.from(this.solutionsSet);
-        const userTokens = this.expressionTokens;
+        const map = LinearSolver.reachable(null, nums, { budget: 1200000, maxPaths: 40 });
+        if (!map || map.size === 0) return null;
 
-        const parseSolTokens = (exprStr) => {
-          const cleaned = MathSolver.cleanExpression(exprStr);
-          const regex = /(\d+|[+\-×÷^√()])/g;
-          return cleaned.match(regex) || [];
+        const target = this.targetNumber;
+
+        // Best achievable distance over the whole board.
+        let bestDiff = Infinity;
+        for (const val of map.keys()) {
+          if (Math.abs(val - Math.round(val)) > 1e-6) continue;
+          const d = Math.abs(Math.round(val) - target);
+          if (d < bestDiff) bestDiff = d;
+        }
+        if (bestDiff === Infinity) return null;
+
+        // Describe what the player typed as a flat [num, op, num, op, ...] list.
+        const userSeq = [];
+        for (const t of this.expressionTokens) {
+          if (t.type === 'num') userSeq.push({ kind: 'num', v: t.val });
+          else if (t.type === 'var') userSeq.push({ kind: 'num', v: (t.realVal !== undefined ? t.realVal : null) });
+          else if (t.val === '(' || t.val === ')' || t.val === '√') continue;
+          else userSeq.push({ kind: 'op', v: t.val });
+        }
+
+        // Cost of turning the player's sequence into a candidate path.
+        const costOf = (path) => {
+          const cand = [];
+          path.forEach(stp => {
+            if (stp.op !== null) cand.push({ kind: 'op', v: stp.op });
+            cand.push({ kind: 'num', v: stp.num });
+          });
+          let cost = 0;
+          const len = Math.max(cand.length, userSeq.length);
+          for (let i = 0; i < len; i++) {
+            const a = userSeq[i], b = cand[i];
+            if (!a || !b) { cost += 1; continue; }
+            if (a.kind !== b.kind || a.v !== b.v) cost += 1;
+          }
+          return cost;
         };
 
-        let bestSol = solutions[0];
-        let maxMatchLen = -1;
-
-        for (const solStr of solutions) {
-          const solTokens = parseSolTokens(solStr);
-          let matchLen = 0;
-          for (let i = 0; i < Math.min(userTokens.length, solTokens.length); i++) {
-            let uVal = userTokens[i].val.toString();
-            if (userTokens[i].type === 'var' && userTokens[i].realVal !== undefined) {
-              uVal = userTokens[i].realVal.toString();
+        let best = null;
+        for (const [val, paths] of map.entries()) {
+          if (Math.abs(val - Math.round(val)) > 1e-6) continue;
+          const v = Math.round(val);
+          if (Math.abs(v - target) !== bestDiff) continue;
+          for (const p of paths) {
+            const c = costOf(p);
+            if (!best || c < best.changes) {
+              best = {
+                expr: LinearSolver.pathToString('', p),
+                val: v,
+                diff: bestDiff,
+                changes: c
+              };
             }
-            if (uVal === solTokens[i]) {
-              matchLen++;
-            } else {
-              break;
-            }
-          }
-          if (matchLen > maxMatchLen) {
-            maxMatchLen = matchLen;
-            bestSol = solStr;
           }
         }
 
-        return MathSolver.cleanExpression(bestSol);
+        return best;
       }
 
       initPointerDrag() {
@@ -2889,11 +3166,10 @@
         }
         const maxTarget = Math.min(9999, Math.max(minTarget, parseInt(this.maxTargetInput.value, 10) || 999));
 
-        let found = false;
-        let attempts = 0;
+        const isUnfiltered = this.unfilteredRandomToggle && this.unfilteredRandomToggle.checked;
 
-        while (!found && attempts < 250) {
-          attempts++;
+        if (isUnfiltered) {
+          // Mode A: Unfiltered Random Target Mode (Default = ON)
           const nums = [];
           const rangeSize = maxVal - minVal + 1;
           const requireUnique = this.uniqueNumbersToggle && this.uniqueNumbersToggle.checked;
@@ -2911,28 +3187,64 @@
             }
           }
 
-          if (count <= 5) {
-            const solMap = MathSolver.solve(nums, minTarget, maxTarget, 20);
-            const valid = [];
-            for (const [val, set] of solMap.entries()) {
-              if (Number.isInteger(val) && val >= minTarget && val <= maxTarget) {
-                valid.push({ val, set });
+          this.targetNumber = Math.floor(Math.random() * (maxTarget - minTarget + 1)) + minTarget;
+          this.givenNumbers = nums.map((n, i) => ({ id: i, val: n, used: false }));
+
+          // Unfiltered: target is pure random — it may have zero exact solutions.
+          const solMap = LinearSolver.reachable(null, nums, { budget: 400000, maxPaths: 4 });
+          const hit = solMap.get(this.targetNumber);
+          this.solutionsSet = new Set(
+            (hit || []).map(p => LinearSolver.pathToString('', p))
+          );
+        } else {
+          // Mode B: Filtered Target Mode (guarantees at least one 100% solution)
+          let found = false;
+          let attempts = 0;
+
+          while (!found && attempts < 250) {
+            attempts++;
+            const nums = [];
+            const rangeSize = maxVal - minVal + 1;
+            const requireUnique = this.uniqueNumbersToggle && this.uniqueNumbersToggle.checked;
+
+            if (requireUnique && rangeSize >= count) {
+              const pool = [];
+              for (let v = minVal; v <= maxVal; v++) pool.push(v);
+              for (let i = 0; i < count; i++) {
+                const randIdx = Math.floor(Math.random() * pool.length);
+                nums.push(pool.splice(randIdx, 1)[0]);
+              }
+            } else {
+              for (let i = 0; i < count; i++) {
+                nums.push(Math.floor(Math.random() * (maxVal - minVal + 1)) + minVal);
               }
             }
-            if (valid.length > 0) {
-              const pick = valid[Math.floor(Math.random() * valid.length)];
-              this.targetNumber = pick.val;
-              this.solutionsSet = pick.set;
-              this.givenNumbers = nums.map((n, i) => ({ id: i, val: n, used: false }));
-              found = true;
-            }
-          } else {
-            const tree = MathSolver.generateTarget(nums, minTarget, maxTarget);
-            if (Number.isInteger(tree.val) && tree.val >= minTarget && tree.val <= maxTarget) {
-              this.targetNumber = tree.val;
-              this.solutionsSet = new Set([tree.expr]);
-              this.givenNumbers = nums.map((n, i) => ({ id: i, val: n, used: false }));
-              found = true;
+
+            if (count <= 8) {
+              // Filtered mode: pick a target that is reachable by TYPING,
+              // using the same linear model the badge and hint use.
+              const solMap = LinearSolver.reachable(null, nums, { budget: 400000, maxPaths: 4 });
+              const valid = [];
+              for (const [val, paths] of solMap.entries()) {
+                if (Number.isInteger(val) && val >= minTarget && val <= maxTarget) {
+                  valid.push({ val, paths });
+                }
+              }
+              if (valid.length > 0) {
+                const pick = valid[Math.floor(Math.random() * valid.length)];
+                this.targetNumber = pick.val;
+                this.solutionsSet = new Set(pick.paths.map(p => LinearSolver.pathToString('', p)));
+                this.givenNumbers = nums.map((n, i) => ({ id: i, val: n, used: false }));
+                found = true;
+              }
+            } else {
+              const tree = MathSolver.generateTarget(nums, minTarget, maxTarget);
+              if (Number.isInteger(tree.val) && tree.val >= minTarget && tree.val <= maxTarget) {
+                this.targetNumber = tree.val;
+                this.solutionsSet = new Set([tree.expr]);
+                this.givenNumbers = nums.map((n, i) => ({ id: i, val: n, used: false }));
+                found = true;
+              }
             }
           }
         }
@@ -2941,10 +3253,18 @@
         this.isSolutionRevealed = false;
         this.isAnswerChecked = false;
         this.isPerfectPath = true;
+        this.perfectWaysCount = null;
         this.bestAchievableDiff = null;
+        this.bestAchievableValues = [];
+        this.bestSolutionInfo = null;
+        this._plan = null; this._planRemaining = null;
+        this._planKey = null; this._planTarget = null;
+        this.bestAchievableSignedDiff = null;
+        this.bestAchievableVal = null;
         this.subtotalSteps = [];
         this.variableMap = {};
         this.closestSolutionHint = null;
+        this.bestSolutionInfo = null;
 
         const checkBtn = document.getElementById('checkBtn');
         if (checkBtn) {
@@ -3227,27 +3547,33 @@
 
         const ghostTokens = (this.activeHintData && this.activeHintData.ghostTokens) ? this.activeHintData.ghostTokens : [];
 
-        // Render Badge (Green PERFECT vs Yellow NOT PERFECT vs Red SEVERE) — controlled by warningModeToggle
+        // Render Realtime Path Warning Badge (Green PERFECT vs Red Best Signed Difference)
         const notPerfectBadgeEl = document.getElementById('notPerfectBadge');
         const warningEnabled = this.warningModeToggle && this.warningModeToggle.checked;
-        const severeLimit = parseInt(this.warningThresholdInput ? this.warningThresholdInput.value : 100, 10) || 100;
         if (notPerfectBadgeEl) {
           const showBadge = warningEnabled && !this.isSolutionRevealed && !this.isAnswerChecked;
           if (showBadge) {
             notPerfectBadgeEl.style.display = 'inline-flex';
-            if (this.isPerfectPath) {
-              // Level 0: Green PERFECT Badge with count of remaining solution ways
-              notPerfectBadgeEl.className = 'not-perfect-badge perfect';
-              const countStr = (this.perfectWaysCount && this.perfectWaysCount > 0) ? ` (${this.perfectWaysCount} แบบ)` : '';
-              notPerfectBadgeEl.textContent = `✅ PERFECT${countStr}`;
-            } else if (this.bestAchievableDiff !== null && this.bestAchievableDiff >= severeLimit) {
-              // Level 2: Severe warning when best achievable deviation >= severeLimit
-              notPerfectBadgeEl.className = 'not-perfect-badge severe';
-              notPerfectBadgeEl.textContent = `❌ ห่างเกิน ${severeLimit}`;
-            } else {
-              // Level 1: Not perfect but still salvageable
+            if (this.badgePending) {
               notPerfectBadgeEl.className = 'not-perfect-badge';
-              notPerfectBadgeEl.textContent = '⚠️ ไม่ PERFECT';
+              notPerfectBadgeEl.textContent = '⏳ กำลังคำนวณ…';
+            } else if (this.isPerfectPath) {
+              // Green: exact target still reachable — show HOW MANY ways
+              notPerfectBadgeEl.className = 'not-perfect-badge perfect';
+              const n = this.perfectWaysCount || 0;
+              notPerfectBadgeEl.textContent = n > 0 ? `✅ PERFECT ${n} แบบ` : `✅ PERFECT`;
+            } else {
+              // Red: exact target impossible — show the NEAREST REACHABLE VALUE
+              notPerfectBadgeEl.className = 'not-perfect-badge severe';
+              const vals = this.bestAchievableValues || [];
+              if (vals.length === 0) {
+                notPerfectBadgeEl.textContent = `❌ ทำไม่ได้`;
+              } else {
+                const shown = vals.slice(0, 2).join(' หรือ ');
+                const more = vals.length > 2 ? ` +${vals.length - 2}` : '';
+                const sign = this.bestAchievableBadgeText || '';
+                notPerfectBadgeEl.textContent = `❌ ใกล้สุด ${shown}${more} (${sign})`;
+              }
             }
           } else {
             notPerfectBadgeEl.style.display = 'none';
@@ -3346,10 +3672,24 @@
           });
         }
 
-        // Render Closest Solution Hint Underline Banner (2 lines on mobile)
+        // Render the single best answer nearest to what the player typed.
         if (this.closestSolBanner) {
-          if (this.closestSolutionHint) {
-            this.closestSolBanner.innerHTML = `<div style="font-size:0.85rem; font-weight:700; color:var(--orange-deep);"><u>เฉลยที่ใกล้เคียงที่สุด:</u></div><div style="font-size:1.1rem; font-weight:700; margin-top:2px;"><u>${this.closestSolutionHint} = ${this.targetNumber}</u></div>`;
+          const info = this.bestSolutionInfo;
+          if (info) {
+            const isExact = info.diff === 0;
+            const headline = isExact
+              ? 'ทำได้ตรงเป้าหมายด้วยวิธีนี้:'
+              : `ที่ดีที่สุดที่เป็นไปได้คือ ${info.val}:`;
+            const tail = isExact
+              ? `= ${info.val}`
+              : `= ${info.val} (ห่าง ${info.val > this.targetNumber ? '+' : ''}${info.val - this.targetNumber})`;
+            const changeNote = info.changes > 0
+              ? `<div style="font-size:0.75rem; font-weight:600; opacity:0.75; margin-top:2px;">แก้จากที่คุณตอบเพียง ${info.changes} จุด</div>`
+              : '';
+            this.closestSolBanner.innerHTML =
+              `<div style="font-size:0.85rem; font-weight:700; color:var(--orange-deep);"><u>${headline}</u></div>` +
+              `<div style="font-size:1.1rem; font-weight:700; margin-top:2px;"><u>${info.expr} ${tail}</u></div>` +
+              changeNote;
             this.closestSolBanner.classList.add('show');
           } else {
             this.closestSolBanner.innerHTML = '';
@@ -3400,6 +3740,7 @@
       pushToken(token) {
         this.expressionTokens.push(token);
         this.closestSolutionHint = null;
+        this.bestSolutionInfo = null;
         this.hideAlert();
         this.resetHintTimer();
       }
@@ -3411,6 +3752,7 @@
           this.expressionTokens.push(token);
         }
         this.closestSolutionHint = null;
+        this.bestSolutionInfo = null;
         this.hideAlert();
         this.resetHintTimer();
       }
@@ -3426,6 +3768,7 @@
           if (vItem) vItem.used = false;
         }
         this.closestSolutionHint = null;
+        this.bestSolutionInfo = null;
         this.hideAlert();
         this.resetHintTimer();
       }
@@ -3441,6 +3784,7 @@
             if (vItem) vItem.used = false;
           }
           this.closestSolutionHint = null;
+          this.bestSolutionInfo = null;
           this.hideAlert();
           this.resetHintTimer();
         }
@@ -3453,6 +3797,7 @@
         this.subtotalSteps = [];
         this.variableMap = {};
         this.closestSolutionHint = null;
+        this.bestSolutionInfo = null;
         this.isPerfectPath = true;
         this.bestAchievableDiff = null;
         this.hideAlert();
@@ -3475,8 +3820,24 @@
       handleTimeoutAutoSubmit() {
         if (this.isAnswerChecked || this.isSolutionRevealed) return;
 
+        const autoFill = this.autoFillTimeoutToggle && this.autoFillTimeoutToggle.checked;
+        const unusedAtTimeout = this.givenNumbers.filter(n => !n.used);
+
+        // Auto-fill is OFF: don't invent an answer for the player. If the
+        // expression can't stand on its own, treat the timeout as a miss.
+        if (!autoFill) {
+          this.autoCloseParenthesesInTokens();
+          const partial = this.evaluateExpression();
+          if (unusedAtTimeout.length > 0 || partial === null) {
+            this.handleTimeoutNoAnswer(unusedAtTimeout.length);
+            return;
+          }
+          this.processAnswerEvaluation();
+          return;
+        }
+
         // Step 1: Fill all unused given numbers safely
-        const unused = this.givenNumbers.filter(n => !n.used);
+        const unused = unusedAtTimeout;
         if (unused.length > 0) {
           unused.sort((a, b) => a.val - b.val);
 
@@ -3502,6 +3863,47 @@
 
         // Step 3: Process evaluation once
         this.processAnswerEvaluation();
+      }
+
+      /**
+       * Timeout with auto-fill disabled and an incomplete expression:
+       * score it as a miss without fabricating tokens the player never chose.
+       */
+      handleTimeoutNoAnswer(unusedCount) {
+        this.isAnswerChecked = true;
+        this.activeHintData = null;
+        if (this.hintTimer) { clearTimeout(this.hintTimer); this.hintTimer = null; }
+        if (this.timerInterval) { clearInterval(this.timerInterval); this.timerInterval = null; }
+
+        const checkBtn = document.getElementById('checkBtn');
+        if (checkBtn) {
+          checkBtn.disabled = true;
+          checkBtn.style.opacity = '0.5';
+          checkBtn.style.cursor = 'not-allowed';
+          checkBtn.style.pointerEvents = 'none';
+        }
+
+        AudioFX.playError();
+        this.streak = 0;
+        if (this.streakValEl) this.streakValEl.textContent = this.streak;
+
+        const healAmount = Math.round(this.bossMaxHp * 0.025);
+        this.bossHp = Math.min(this.bossMaxHp, this.bossHp + healAmount);
+        this.updateBossUI(false);
+
+        // Still show the best line they could have played.
+        this.bestSolutionInfo = this.findBestSolutionNearestToUser();
+        this.closestSolutionHint = null;
+
+        const leftMsg = unusedCount > 0 ? ` (ยังเหลือเลขไม่ได้ใช้ ${unusedCount} ตัว)` : '';
+        if (this.autoNextToggle && this.autoNextToggle.checked) {
+          this.showAlert(`หมดเวลา! ไม่ได้ส่งคำตอบ${leftMsg} 👾 Boss ฟื้นฟู +${healAmount} HP — กำลังเปลี่ยนข้อถัดไป...`, 'danger');
+          setTimeout(() => this.newPuzzle(), 1200);
+        } else {
+          this.showAlert(`หมดเวลา! ไม่ได้ส่งคำตอบ${leftMsg} 👾 Boss ฟื้นฟู +${healAmount} HP (+2.5%)`, 'danger');
+        }
+
+        this.render();
       }
 
       evaluateExpression() {
@@ -3637,6 +4039,15 @@
         let baseDamage = 0;
         let pointsEarned = 0;
 
+        // Was a strictly better answer available on this board?
+        const bestPossible = this.findBestSolutionNearestToUser();
+        this.bestSolutionInfo = null;
+        if (bestPossible && diff - bestPossible.diff > 1e-6) {
+          // The player did NOT play the best line — show the single best
+          // answer that is closest to what they typed.
+          this.bestSolutionInfo = bestPossible;
+        }
+
         if (diff < 1e-6) {
           baseDamage = 100;
           pointsEarned = 100 + (this.streak * 20);
@@ -3649,9 +4060,8 @@
           const accuracy = Math.max(0, Math.round(100 - diff));
           baseDamage = accuracy;
           pointsEarned = accuracy;
-          
-          // Find single closest solution matching user prefix for hint display
-          this.closestSolutionHint = this.findClosestSolution();
+
+          this.closestSolutionHint = null;
 
           if (accuracy > 0) {
             AudioFX.playClick();
@@ -3738,14 +4148,52 @@
         this.render();
       }
 
+      /**
+       * Full-board closest solutions (uses ALL given numbers, ignores partial input),
+       * from the same unified engine. Returns every expression tied at min |diff|,
+       * both + and - sides.
+       */
+      /**
+       * Closest full-board answers, using the SAME linear model the badge uses,
+       * so the reveal can never contradict the badge. Uses every given number,
+       * which is what the answer checker requires.
+       */
+      findClosestSolutions() {
+        const nums = this.givenNumbers.map(n => n.val);
+        const map = LinearSolver.reachable(null, nums, { budget: 500000, maxPaths: 4 });
+        const target = this.targetNumber;
+
+        let minDiff = Infinity;
+        for (const val of map.keys()) {
+          if (Math.abs(val - Math.round(val)) > 1e-6) continue;
+          const d = Math.abs(Math.round(val) - target);
+          if (d < minDiff) minDiff = d;
+        }
+        if (minDiff === Infinity) return [];
+
+        const results = [];
+        for (const [val, paths] of map.entries()) {
+          if (Math.abs(val - Math.round(val)) > 1e-6) continue;
+          const v = Math.round(val);
+          if (Math.abs(v - target) !== minDiff) continue;
+          const signed = v - target;
+          const signedStr = signed > 0 ? `+${signed}` : `${signed}`;
+          paths.forEach(p => {
+            results.push({
+              expr: LinearSolver.pathToString('', p),
+              val: v, signedStr, diff: minDiff
+            });
+          });
+        }
+        results.sort((x, y) => x.val - y.val);
+        return results;
+      }
+
       revealSolutions() {
         AudioFX.playClick();
         this.isSolutionRevealed = true;
         this.activeHintData = null;
-        if (this.hintTimer) {
-          clearTimeout(this.hintTimer);
-          this.hintTimer = null;
-        }
+        if (this.hintTimer) { clearTimeout(this.hintTimer); this.hintTimer = null; }
 
         const checkBtn = document.getElementById('checkBtn');
         if (checkBtn) {
@@ -3756,18 +4204,29 @@
         }
 
         this.solutionsGrid.innerHTML = '';
-        if (!this.solutionsSet || this.solutionsSet.size === 0) {
-          this.solutionsGrid.innerHTML = `<div class="sol-chip">ไม่พบเฉลยตัวอย่าง</div>`;
+        const closest = this.findClosestSolutions();
+
+        if (closest.length === 0) {
+          this.solutionsGrid.innerHTML = `<div class="sol-chip">ไม่พบวิธีคำนวณ</div>`;
         } else {
-          const solArray = Array.from(this.solutionsSet).slice(0, 15);
-          solArray.forEach(expr => {
-            const cleaned = MathSolver.cleanExpression(expr);
+          const isPerfect = closest[0].diff === 0;
+          const header = document.createElement('div');
+          header.className = 'sol-chip';
+          header.style.fontWeight = '700';
+          header.textContent = isPerfect
+            ? `✅ ตรงเป้าหมาย ${this.targetNumber} — พบ ${closest.length} แบบ`
+            : `❌ ทำได้ใกล้สุดคือผลต่าง ±${closest[0].diff} — พบ ${closest.length} แบบ`;
+          this.solutionsGrid.appendChild(header);
+
+          closest.slice(0, 20).forEach(item => {
             const chip = document.createElement('div');
             chip.className = 'sol-chip';
-            chip.textContent = `${cleaned} = ${this.targetNumber}`;
+            const signedText = item.diff === 0 ? '' : ` (คลาดเคลื่อน ${item.signedStr})`;
+            chip.textContent = `${item.expr} = ${item.val}${signedText}`;
             this.solutionsGrid.appendChild(chip);
           });
         }
+
         this.solutionsCard.classList.add('show');
         this.showAlert(`เปิดดูเฉลยแล้ว! ปุ่มตรวจคำตอบถูกปิดใช้งานสำหรับข้อนี้ (กด "ข้อถัดไป" เพื่อเริ่มข้อใหม่)`, 'info');
         this.render();
