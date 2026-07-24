@@ -127,7 +127,7 @@
       position: relative;
     }
 
-    /* Header Row (Brand Tag + Theme Toggle Button) */
+    /* Header Row (Brand Tag + Swapped Theme Toggle & Mode Toggle Buttons) */
     .header-row {
       display: flex;
       justify-content: space-between;
@@ -154,7 +154,7 @@
       background: var(--orange);
     }
 
-    /* Theme Toggle Button */
+    /* Theme & Header Action Buttons */
     .theme-toggle-btn {
       font-family: var(--font-display);
       font-size: 10px;
@@ -181,8 +181,8 @@
     /* Target Section */
     .target-section {
       text-align: center;
-      margin-top: 6px;
-      margin-bottom: 16px;
+      margin-top: 10px;
+      margin-bottom: 14px;
     }
 
     .target-label {
@@ -214,7 +214,8 @@
 
     /* Keypad Section (OPERATORS ONLY) */
     .keypad-section {
-      margin-bottom: 14px;
+      margin-top: 10px;
+      margin-bottom: 12px;
     }
 
     .keypad-grid {
@@ -246,7 +247,7 @@
 
     /* Workspace Zone */
     .workspace-section {
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
 
     .workspace-dropzone {
@@ -332,7 +333,8 @@
 
     /* Unused Numbers Bar */
     .unused-numbers-section {
-      margin-top: 10px;
+      margin-top: 6px;
+      margin-bottom: 12px;
     }
 
     .unused-numbers-flex {
@@ -367,10 +369,11 @@
       border-color: var(--ink);
     }
 
-    /* Plain Text Expression Display */
+    /* Plain Text Expression Display (Dynamically moved to Top in Calc mode, Bottom in Card mode) */
     .text-result-section {
       text-align: center;
-      margin-bottom: 16px;
+      margin-top: 10px;
+      margin-bottom: 14px;
       padding: 12px 14px;
       background: var(--paper-light);
       border: 1px solid var(--ink-faint);
@@ -378,6 +381,22 @@
     }
 
     #textResultDisplay {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .history-step-line {
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--ink-soft);
+      letter-spacing: 0.04em;
+    }
+
+    .active-expr-row {
       display: flex;
       flex-direction: row;
       align-items: center;
@@ -407,7 +426,7 @@
       min-height: 1.8rem;
     }
 
-    /* Action Buttons Grid */
+    /* Action Buttons Grid Base Layout */
     .actions-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -415,6 +434,52 @@
       margin-bottom: 12px;
       width: 100%;
       box-sizing: border-box;
+    }
+
+    /* CALCULATOR MODE ACTION BUTTONS LAYOUT (2x2 GRID: Left Col = Solve & Next; Right Col = Check Answer Spanning 2 Rows) */
+    body.mode-calc .actions-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 44px 44px;
+      gap: 8px;
+    }
+
+    body.mode-calc #solveBtn {
+      grid-column: 1 / 2;
+      grid-row: 1 / 2;
+      width: 100%;
+      height: 44px;
+      margin: 0;
+    }
+
+    body.mode-calc #nextBtn {
+      grid-column: 1 / 2;
+      grid-row: 2 / 3;
+      width: 100%;
+      height: 44px;
+      margin: 0;
+      box-shadow: none;
+    }
+
+    body.mode-calc #checkBtn {
+      grid-column: 2 / 3;
+      grid-row: 1 / 3;
+      width: 100%;
+      height: 100%;
+      min-height: 96px;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    body.mode-calc #checkBtn svg {
+      width: 22px;
+      height: 22px;
     }
 
     .btn-action-half {
@@ -715,11 +780,9 @@
       .form-group[style*="grid-column"] { grid-column: span 1 !important; }
       .stats-row { grid-template-columns: repeat(2, 1fr); }
       .keypad-grid { grid-template-columns: repeat(4, 1fr); }
-      .actions-grid { grid-template-columns: 1fr 1fr; }
-      .btn-next { grid-column: span 2 !important; }
+      body:not(.mode-calc) .actions-grid { grid-template-columns: 1fr 1fr; }
+      body:not(.mode-calc) .btn-next { grid-column: span 2 !important; }
     }
-
-
 
     /* BOSS STATUS SECTION */
     .boss-section {
@@ -818,6 +881,42 @@
       animation: pulseWarning 0.6s infinite alternate;
     }
 
+    /* SPEED COMBO PROGRESS BAR */
+    .combo-bar-container {
+      margin-top: 6px;
+      background: var(--paper-white);
+      border: 1px solid var(--orange);
+      padding: 4px 8px;
+      display: none;
+    }
+
+    .combo-bar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-display);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-weight: 700;
+      color: var(--orange-deep);
+      margin-bottom: 3px;
+    }
+
+    .combo-bar-outer {
+      height: 8px;
+      background: var(--paper-warm);
+      border: 1px solid var(--ink);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .combo-bar-inner {
+      height: 100%;
+      background: linear-gradient(90deg, #F97316, #EF4444);
+      transition: width 0.1s linear;
+    }
+
     /* CALCULATOR MODE STYLES */
     .calc-keypad-grid {
       display: grid;
@@ -862,6 +961,13 @@
       font-weight: 700;
     }
 
+    .calc-var-btn {
+      background: var(--green-soft);
+      color: var(--green-deep);
+      border: 2px solid var(--green);
+      font-weight: 800;
+    }
+
     .calc-num-available {
       background: var(--paper-white);
       border: 2px solid var(--orange);
@@ -901,29 +1007,113 @@
     .calc-num-available:hover .calc-badge {
       color: #ffffff;
     }
+
+    /* MODAL STYLES */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(11, 37, 69, 0.65);
+      backdrop-filter: blur(3px);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .modal-card {
+      background: var(--paper-white);
+      border: 2px solid var(--ink);
+      box-shadow: 6px 6px 0px var(--ink);
+      width: 100%;
+      max-width: 540px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .modal-header {
+      background: var(--paper-warm);
+      border-bottom: 1px solid var(--ink);
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-display);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .modal-close-btn {
+      background: transparent;
+      border: none;
+      font-size: 22px;
+      line-height: 1;
+      color: var(--ink);
+      cursor: pointer;
+      padding: 0 4px;
+    }
+
+    .modal-body {
+      padding: 16px;
+      overflow-y: auto;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      color: var(--ink);
+    }
+
+    .modal-body h3 {
+      font-family: var(--font-display);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--orange-deep);
+      margin-top: 14px;
+      margin-bottom: 6px;
+      border-bottom: 1px dashed var(--ink-faint);
+      padding-bottom: 4px;
+    }
+
+    .modal-body h3:first-child { margin-top: 0; }
+
+    .modal-body ul {
+      padding-left: 18px;
+      margin-bottom: 8px;
+    }
+
+    .modal-body li {
+      margin-bottom: 4px;
+    }
   </style>
 </head>
-<body>
+<body class="mode-calc">
 
   <div class="app-container">
 
     <!-- MAIN GAME BOARD -->
     <main class="game-board">
       
-      <!-- Header Row with Corner Brand & Mode/Theme Toggles -->
+      <!-- Header Row with Corner Brand & Swapped Theme Toggle & Mode Toggle Buttons -->
       <div class="header-row">
         <div class="corner-brand">
           <span class="dot"></span>
           SPEED MATH — VISUAL FIELD GUIDE
         </div>
-        <div style="display: flex; gap: 6px; align-items: center;">
-          <button class="theme-toggle-btn" id="modeToggleBtn" title="สลับโหมด เครื่องคิดเลข / การ์ดลากวาง">
-            <span id="modeIcon">🧮</span>
-            <span id="modeLabel">CALC</span>
+        <div style="display: flex; gap: 5px; align-items: center;">
+          <button class="theme-toggle-btn" id="rulesBtn" title="ดูรายละเอียดกติกาเกม">
+            <span>📖</span>
+            <span>กติกา</span>
           </button>
           <button class="theme-toggle-btn" id="themeToggleBtn" title="สลับธีม สว่าง / มืด">
             <span id="themeIcon">🌙</span>
             <span id="themeLabel">DARK</span>
+          </button>
+          <button class="theme-toggle-btn" id="modeToggleBtn" title="สลับโหมด เครื่องคิดเลข / การ์ดลากวาง">
+            <span id="modeIcon">🧮</span>
+            <span id="modeLabel">CALC</span>
           </button>
         </div>
       </div>
@@ -937,27 +1127,53 @@
         <div class="boss-hp-bar-outer">
           <div class="boss-hp-bar-inner" id="bossHpBarInner" style="width: 100%;"></div>
         </div>
-      </div>
 
-      <!-- PLAIN TEXT EXPRESSION DISPLAY (MOVED TO TOP ABOVE TARGET RESULT) -->
-      <div class="text-result-section">
-        <div id="textResultDisplay">
-          <span class="formatted-expression-text" id="formattedExprText">--</span>
-          <span class="formatted-eval-result" id="formattedEvalBadge"></span>
+        <!-- SPEED COMBO COUNTDOWN PROGRESS BAR -->
+        <div class="combo-bar-container" id="comboBarContainer">
+          <div class="combo-bar-header">
+            <span id="comboBadgeTitle">⚡ SPEED COMBO DRAIN BAR</span>
+            <span id="comboTimeText">--s</span>
+          </div>
+          <div class="combo-bar-outer">
+            <div class="combo-bar-inner" id="comboBarInner" style="width: 100%;"></div>
+          </div>
         </div>
       </div>
 
-      <!-- Target Display -->
-      <div class="target-section">
+      <!-- TARGET SECTION (MOVED TO TOP BELOW BOSS HP IN CALCULATOR MODE) -->
+      <div class="target-section" id="topTargetSection">
         <div class="target-label">เป้าหมายผลลัพธ์ (Target Result)</div>
         <div class="target-badge">
           <span class="target-number" id="targetNum">--</span>
         </div>
       </div>
 
-      <!-- CARD MODE CONTAINER (TABS/TILES & OPERATORS) -->
-      <div id="cardModeContainer">
-        <!-- KEYPAD SECTION (OPERATORS ONLY) -->
+      <!-- PLAIN TEXT EXPRESSION DISPLAY (MOVED TO TOP RIGHT BELOW BOSS HP & TARGET IN CALC MODE) -->
+      <div class="text-result-section">
+        <div id="textResultDisplay">
+          <div id="historyStepContainer"></div>
+          <div class="active-expr-row">
+            <span class="formatted-expression-text" id="formattedExprText">--</span>
+            <span class="formatted-eval-result" id="formattedEvalBadge"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD MODE CONTAINER (TABS/TILES & OPERATORS & TARGET RESULT REORDERED) -->
+      <div id="cardModeContainer" style="display: none;">
+        <!-- 1. WORKSPACE ZONE (กล่องสำหรับลากมาวาง อยู่ด้านบนสุด) -->
+        <div class="workspace-section">
+          <div class="workspace-dropzone" id="workspaceDropzone">
+            <!-- Dynamic tiles rendered here -->
+          </div>
+        </div>
+
+        <!-- 2. RANDOM NUMBERS POOL (ตัวเลขสุ่ม สลับมาให้อยู่บนเครื่องหมาย) -->
+        <div class="unused-numbers-section">
+          <div class="unused-numbers-flex" id="unusedNumbersFlex"></div>
+        </div>
+
+        <!-- 3. KEYPAD SECTION (OPERATORS BAR อยู่ตรงกลาง) -->
         <div class="keypad-section">
           <div class="keypad-grid">
             <button class="op-btn" data-op="+">+</button>
@@ -971,23 +1187,19 @@
           </div>
         </div>
 
-        <!-- REORDERABLE WORKSPACE ZONE -->
-        <div class="workspace-section">
-          <div class="workspace-dropzone" id="workspaceDropzone">
-            <!-- Dynamic tiles rendered here -->
-          </div>
-          
-          <!-- Unused Numbers Bar -->
-          <div class="unused-numbers-section">
-            <div class="unused-numbers-flex" id="unusedNumbersFlex"></div>
+        <!-- 4. TARGET DISPLAY SECTION FOR CARD MODE (เอาเลขเป้าหมายอยู่ข้างล่างเครื่องหมายใน Card Mode) -->
+        <div class="target-section" id="cardTargetSection" style="display: none;">
+          <div class="target-label">เป้าหมายผลลัพธ์ (Target Result)</div>
+          <div class="target-badge">
+            <span class="target-number" id="cardTargetNum">--</span>
           </div>
         </div>
       </div>
 
-      <!-- CALCULATOR MODE CONTAINER (RETRO CALCULATOR KEYPAD) -->
-      <div id="calcModeContainer" style="display: none;">
+      <!-- CALCULATOR MODE CONTAINER (RETRO CALCULATOR KEYPAD 4x5) -->
+      <div id="calcModeContainer">
         <div class="calc-keypad-grid" id="calcKeypadGrid">
-          <!-- Calculator Keypad Rendered Dynamically -->
+          <!-- Calculator Keypad Rendered Dynamically 4x5 -->
         </div>
       </div>
 
@@ -1007,7 +1219,7 @@
         </button>
         <button class="btn btn-green" id="checkBtn">
           <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4L12 14.01l-3-3"/></svg>
-          ตรวจคำตอบ
+          <span>ตรวจคำตอบ</span>
         </button>
         
         <!-- NEXT PUZZLE BUTTON -->
@@ -1061,10 +1273,10 @@
       </div>
       <div class="settings-grid">
         <div class="form-group">
-          <label>จำนวนเลขโจทย์สุ่ม (2 - 10)</label>
+          <label>จำนวนเลขโจทย์สุ่ม (2 - 9)</label>
           <div class="range-input-group">
-            <input type="range" id="countSlider" min="2" max="10" value="5">
-            <input type="number" id="countInput" class="input-control" min="2" max="10" value="5" style="width: 55px; flex: none;">
+            <input type="range" id="countSlider" min="2" max="9" value="5">
+            <input type="number" id="countInput" class="input-control" min="2" max="9" value="5" style="width: 55px; flex: none;">
           </div>
         </div>
         <div class="form-group">
@@ -1099,9 +1311,56 @@
             ป้องกันเลขโจทย์สุ่มซ้ำกัน (เปิดเพื่อไม่ให้สุ่มได้ตัวเลขซ้ำกันในข้อเดียวกัน)
           </label>
         </div>
+        <div class="form-group" style="grid-column: span 3;">
+          <label class="toggle-checkbox-label">
+            <input type="checkbox" id="hideIntermediateToggle">
+            โหมดซ่อนผลลัพธ์คำนวณชั่วคราวระหว่างทาง (Hard Mode — แสดง = ? ตลอดเวลา)
+          </label>
+        </div>
+        <div class="form-group" style="grid-column: span 3;">
+          <label class="toggle-checkbox-label">
+            <input type="checkbox" id="subtotalModeToggle" checked>
+            โหมดคำนวณทีละขั้นด้วยปุ่ม = (Step-by-Step Subtotal Mode ในเครื่องคิดเลข)
+          </label>
+        </div>
       </div>
     </section>
 
+  </div>
+
+  <!-- GAME RULES MODAL -->
+  <div class="modal-overlay" id="rulesModal" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span>📖 กติกาและรายละเอียดการเล่นเกม</span>
+        <button class="modal-close-btn" id="closeRulesBtn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <h3>⚔️ 1. การต่อสู้และคำนวณดาเมจ Boss</h3>
+        <ul>
+          <li><b>ตอบตรงเป้าหมายเป๊ะ (คลาดเคลื่อน 0):</b> สร้างความเสียหายพื้นฐาน 100 HP + คะแนนโบนัสตาม Streak</li>
+          <li><b>ตอบคลาดเคลื่อน (&lt; 100):</b> สร้างความเสียหาย = <code>100 - ค่าคลาดเคลื่อน</code> HP</li>
+          <li><b>คลาดเคลื่อนมาก (&ge; 100):</b> ทำดาเมจ 0 HP และ <b>Boss จะฟื้นฟู HP +2.5% ของ Max HP</b></li>
+        </ul>
+
+        <h3>⚡ 2. ระบบ Speed Attack Combo & หลอดเวลานับถอยหลัง</h3>
+        <ul>
+          <li>เมื่อแก้โจทย์ข้อถัดไปได้ <b>เร็วกว่าสถิติเวลาข้อก่อนหน้า</b> ตัวคูณดาเมจจะเพิ่มขึ้น <b>+0.1x</b> ต่อเนื่อง (เช่น x1.1, x1.2, x1.3...)</li>
+          <li>หลอดสีส้ม Speed Combo จะนับถอยหลังตามสถิติเวลาข้อก่อนหน้า หากเวลาหมดก่อนกดตรวจคำตอบ คอมโบจะหลุด (reset เป็น x1.0)</li>
+          <li>หากใช้เวลาเท่าเดิม ตัวคูณจะเท่าเดิม หากใช้เวลาช้ากว่าสถิติเดิม คอมโบจะหลุด</li>
+        </ul>
+
+        <h3>⏳ 3. การหมดเวลาและการฟื้นฟูของ Boss</h3>
+        <ul>
+          <li>เมื่อเวลาต่อข้อหมดลง (Countdown 0s) <b>Boss จะฟื้นฟู HP +2.5% ของ Max HP</b> (เช่น Boss Lv.1 Max HP 1000 เพิ่ม +25 HP)</li>
+        </ul>
+
+        <h3>🧮 4. โหมดคำนวณทีละขั้นด้วยปุ่ม = (Subtotal Mode)</h3>
+        <ul>
+          <li>ในโหมดเครื่องคิดเลข หากเปิด <b>"โหมดคำนวณทีละขั้นด้วยปุ่ม ="</b> ผู้เล่นสามารถกด <code>=</code> เพื่อรวมผลลัพธ์ย่อยเป็นไพ่ตัวแปรชั่วคราว (<code>a</code>, <code>b</code>, <code>c</code>...) นำไปใช้คำนวณในขั้นตอนถัดไปได้ (เปิดใช้งานเป็นค่าเริ่มต้น)</li>
+        </ul>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -1189,6 +1448,9 @@
         this.cardContainer = document.getElementById('cardModeContainer');
         this.calcContainer = document.getElementById('calcModeContainer');
 
+        this.topTargetSection = document.getElementById('topTargetSection');
+        this.cardTargetSection = document.getElementById('cardTargetSection');
+
         const savedMode = localStorage.getItem('speedmath_mode') || 'calc';
         this.applyMode(savedMode);
 
@@ -1211,17 +1473,38 @@
         this.game.mode = mode;
         const backspaceBtn = document.getElementById('backspaceBtn');
         const clearBtn = document.getElementById('clearBtn');
+        const textResultSection = document.querySelector('.text-result-section');
+        const topTargetSection = document.getElementById('topTargetSection');
+        const actionsGrid = document.querySelector('.actions-grid');
 
         if (mode === 'calc') {
+          document.body.classList.add('mode-calc');
           this.cardContainer.style.display = 'none';
           this.calcContainer.style.display = 'block';
+          if (this.topTargetSection) this.topTargetSection.style.display = 'block';
+          if (this.cardTargetSection) this.cardTargetSection.style.display = 'none';
+
+          // Move textResultSection to top right below topTargetSection in Calc mode!
+          if (textResultSection && topTargetSection) {
+            topTargetSection.after(textResultSection);
+          }
+
           if (backspaceBtn) backspaceBtn.style.display = 'none';
           if (clearBtn) clearBtn.style.display = 'none';
           this.icon.textContent = '🎴';
           this.label.textContent = 'CARDS';
         } else {
+          document.body.classList.remove('mode-calc');
           this.cardContainer.style.display = 'block';
           this.calcContainer.style.display = 'none';
+          if (this.topTargetSection) this.topTargetSection.style.display = 'none';
+          if (this.cardTargetSection) this.cardTargetSection.style.display = 'block';
+
+          // Move textResultSection to bottom right before actionsGrid in Card mode!
+          if (textResultSection && actionsGrid) {
+            actionsGrid.before(textResultSection);
+          }
+
           if (backspaceBtn) backspaceBtn.style.display = 'inline-flex';
           if (clearBtn) clearBtn.style.display = 'inline-flex';
           this.icon.textContent = '🧮';
@@ -1392,7 +1675,11 @@
         this.dragData = null;
         this.dragProxyEl = null;
 
-        // Timer State
+        // Subtotal Steps State for '=' Calculator Subtotal Mode
+        this.subtotalSteps = [];
+        this.variableMap = {};
+
+        // Puzzle Timer State
         this.timerInterval = null;
         this.remainingTime = 0;
 
@@ -1405,10 +1692,14 @@
         this.bossMaxHp = 1000;
         this.bossHp = 1000;
 
-        // Speed Attack Combo System Properties
+        // Speed Attack Combo System Properties & Countdown Bar State
         this.puzzleStartTime = Date.now();
         this.prevSolveTime = null;
         this.comboCount = 0;
+        this.comboTimeWindow = 0;
+        this.comboRemainingTime = 0;
+        this.comboInterval = null;
+
         this.isSolutionRevealed = false;
         this.mode = localStorage.getItem('speedmath_mode') || 'calc';
 
@@ -1423,9 +1714,12 @@
         this.timeLimitInput = document.getElementById('timeLimitInput');
         this.autoNextToggle = document.getElementById('autoNextToggle');
         this.uniqueNumbersToggle = document.getElementById('uniqueNumbersToggle');
+        this.hideIntermediateToggle = document.getElementById('hideIntermediateToggle');
+        this.subtotalModeToggle = document.getElementById('subtotalModeToggle');
         this.timerValEl = document.getElementById('timerVal');
 
         this.targetNumEl = document.getElementById('targetNum');
+        this.cardTargetNumEl = document.getElementById('cardTargetNum');
         this.workspaceDropzone = document.getElementById('workspaceDropzone');
         this.unusedNumbersFlex = document.getElementById('unusedNumbersFlex');
         
@@ -1442,6 +1736,7 @@
         this.solutionsGrid = document.getElementById('solutionsGrid');
 
         this.bindEvents();
+        this.initRulesModal();
         this.minTargetInput.addEventListener('change', () => {
           let val = parseInt(this.minTargetInput.value, 10);
           if (isNaN(val) || val < 1) {
@@ -1452,8 +1747,32 @@
         this.newPuzzle();
       }
 
+      initRulesModal() {
+        const rulesBtn = document.getElementById('rulesBtn');
+        const rulesModal = document.getElementById('rulesModal');
+        const closeRulesBtn = document.getElementById('closeRulesBtn');
+
+        if (rulesBtn && rulesModal && closeRulesBtn) {
+          rulesBtn.addEventListener('click', () => {
+            AudioFX.playClick();
+            rulesModal.style.display = 'flex';
+          });
+
+          closeRulesBtn.addEventListener('click', () => {
+            AudioFX.playClick();
+            rulesModal.style.display = 'none';
+          });
+
+          rulesModal.addEventListener('click', (e) => {
+            if (e.target === rulesModal) {
+              rulesModal.style.display = 'none';
+            }
+          });
+        }
+      }
+
       bindEvents() {
-        // Sync Count Slider and Count Input WITHOUT restarting current puzzle immediately
+        // Sync Count Slider and Count Input (Capped max to 9 for Calc mode compatibility)
         this.countSlider.addEventListener('input', () => {
           this.countInput.value = this.countSlider.value;
         });
@@ -1461,10 +1780,24 @@
         this.countInput.addEventListener('input', () => {
           let val = parseInt(this.countInput.value, 10);
           if (!isNaN(val)) {
-            val = Math.max(2, Math.min(10, val));
+            val = Math.max(2, Math.min(9, val));
             this.countSlider.value = val;
           }
         });
+
+        if (this.hideIntermediateToggle) {
+          this.hideIntermediateToggle.addEventListener('change', () => {
+            AudioFX.playClick();
+            this.render();
+          });
+        }
+
+        if (this.subtotalModeToggle) {
+          this.subtotalModeToggle.addEventListener('change', () => {
+            AudioFX.playClick();
+            this.render();
+          });
+        }
 
         document.querySelectorAll('.op-btn').forEach(b => {
           b.addEventListener('click', () => {
@@ -1650,11 +1983,16 @@
               this.streak = 0;
               this.streakValEl.textContent = this.streak;
 
+              // Boss Healing +2.5% of max HP on timeout!
+              const healAmount = Math.round(this.bossMaxHp * 0.025);
+              this.bossHp = Math.min(this.bossMaxHp, this.bossHp + healAmount);
+              this.updateBossUI(false);
+
               if (this.autoNextToggle.checked) {
-                this.showAlert('หมดเวลาแล้ว! กำลังเปลี่ยนข้อถัดไป...', 'danger');
+                this.showAlert(`หมดเวลาแล้ว! 👾 Boss ฟื้นฟู +${healAmount} HP (+2.5%) — กำลังเปลี่ยนข้อถัดไป...`, 'danger');
                 setTimeout(() => this.newPuzzle(), 1200);
               } else {
-                this.showAlert('หมดเวลาแล้ว!', 'danger');
+                this.showAlert(`หมดเวลาแล้ว! 👾 Boss ฟื้นฟู +${healAmount} HP (+2.5%)`, 'danger');
               }
             }
           }, 1000);
@@ -1663,16 +2001,64 @@
         }
       }
 
+      startComboTimer() {
+        if (this.comboInterval) {
+          clearInterval(this.comboInterval);
+          this.comboInterval = null;
+        }
+
+        const comboBarContainer = document.getElementById('comboBarContainer');
+        const comboBarInner = document.getElementById('comboBarInner');
+        const comboTimeText = document.getElementById('comboTimeText');
+        const comboBadgeTitle = document.getElementById('comboBadgeTitle');
+
+        if (this.comboCount > 0 && this.prevSolveTime !== null && this.prevSolveTime > 0) {
+          this.comboTimeWindow = this.prevSolveTime;
+          this.comboRemainingTime = this.prevSolveTime;
+
+          if (comboBarContainer) comboBarContainer.style.display = 'block';
+
+          const mult = 1.0 + (this.comboCount * 0.1);
+          if (comboBadgeTitle) comboBadgeTitle.textContent = `⚡ SPEED COMBO x${mult.toFixed(1)} (ทำเวลาให้เร็วกว่า ${this.comboTimeWindow.toFixed(1)}s)`;
+
+          const updateComboUI = () => {
+            const pct = Math.max(0, Math.min(100, (this.comboRemainingTime / this.comboTimeWindow) * 100));
+            if (comboBarInner) comboBarInner.style.width = `${pct}%`;
+            if (comboTimeText) comboTimeText.textContent = `${this.comboRemainingTime.toFixed(1)}s`;
+          };
+
+          updateComboUI();
+
+          const startTime = Date.now();
+          const duration = this.prevSolveTime * 1000;
+
+          this.comboInterval = setInterval(() => {
+            const elapsed = Date.now() - startTime;
+            this.comboRemainingTime = Math.max(0, (duration - elapsed) / 1000);
+
+            updateComboUI();
+
+            if (this.comboRemainingTime <= 0) {
+              clearInterval(this.comboInterval);
+              this.comboInterval = null;
+              this.comboCount = 0;
+              this.prevSolveTime = null;
+              if (comboBarContainer) comboBarContainer.style.display = 'none';
+              this.updateBossUI(false);
+              this.showAlert('หมดเวลาต่อคอมโบ! สถิติเวลาคอมโบหลุดแล้ว (เริ่มสเตรคคอมโบใหม่)', 'info');
+            }
+          }, 100);
+        } else {
+          if (comboBarContainer) comboBarContainer.style.display = 'none';
+        }
+      }
+
       newPuzzle() {
         if (this.timerInterval) clearInterval(this.timerInterval);
 
-        const count = parseInt(this.countInput.value, 10) || 5;
+        const count = Math.min(9, parseInt(this.countInput.value, 10) || 5);
         let maxVal = Math.min(9999, Math.max(1, parseInt(this.maxNumInput.value, 10) || 9));
         let minVal = Math.max(0, parseInt(this.minNumInput.value, 10) || 0);
-
-
-
-
 
         let minTarget = parseInt(this.minTargetInput.value, 10);
         if (isNaN(minTarget) || minTarget < 1) {
@@ -1731,6 +2117,8 @@
 
         this.puzzleStartTime = Date.now();
         this.isSolutionRevealed = false;
+        this.subtotalSteps = [];
+        this.variableMap = {};
 
         const checkBtn = document.getElementById('checkBtn');
         if (checkBtn) {
@@ -1745,28 +2133,33 @@
         this.solutionsCard.classList.remove('show');
         this.render();
         this.startTimer();
+        this.startComboTimer();
       }
 
-    
+      /**
+       * Renders Calculator 4x5 Keypad according to strict layout specifications:
+       * Row 1: [ ⌫ , C , ^ , ÷ ]
+       * Row 2: [ Slot 6 , Slot 7 , Slot 8 , × ]
+       * Row 3: [ Slot 3 , Slot 4 , Slot 5 , - ]
+       * Row 4: [ Slot 0 , Slot 1 , Slot 2 , + ]
+       * Row 5: [ ( , ) , √ , = ]
+       */
       renderCalculatorKeypad() {
         const grid = document.getElementById('calcKeypadGrid');
         if (!grid) return;
         grid.innerHTML = '';
 
-        // Extract unique generated numbers and sort them in ascending order (lowest to highest)
         const sortedUniqueVals = Array.from(new Set(this.givenNumbers.map(n => n.val))).sort((a, b) => a - b);
 
-        // Count unused occurrences per unique number
         const numberCounts = {};
         sortedUniqueVals.forEach(v => numberCounts[v] = 0);
         this.givenNumbers.filter(n => !n.used).forEach(n => {
           numberCounts[n.val] = (numberCounts[n.val] || 0) + 1;
         });
 
-        // 10 Number slots on the calculator grid mapped from sorted generated numbers
-        // Positions: [slot0, slot1, slot2, slot3, slot4, slot5, slot6, slot7, slot8, slot9]
+        // Map up to 9 slots (0 to 8)
         const numSlots = [];
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 9; i++) {
           if (i < sortedUniqueVals.length) {
             const val = sortedUniqueVals[i];
             numSlots.push({ val: val, count: numberCounts[val] || 0, active: true });
@@ -1775,17 +2168,16 @@
           }
         }
 
-        // Layout template mapping number slots to positions:
-        // Slot 6 (val 7), Slot 7 (val 8), Slot 8 (val 9) -> Row 2
-        // Slot 3 (val 4), Slot 4 (val 5), Slot 5 (val 6) -> Row 3
-        // Slot 0 (val 1), Slot 1 (val 2), Slot 2 (val 3) -> Row 4
-        // Slot 9 (val 0)                                 -> Row 5
+        // Active variable subtotal cards (a, b, c...) available for selection
+        const activeVars = this.subtotalSteps.filter(step => !step.used);
+
+        // 4x5 Keypad layout grid matrix
         const keypadLayout = [
-          [ { type: 'action', val: '⌫' }, { type: 'action', val: 'C' }, { type: 'op', val: '^' }, { type: 'op', val: '√' } ],
-          [ { type: 'numSlot', slotIdx: 6 }, { type: 'numSlot', slotIdx: 7 }, { type: 'numSlot', slotIdx: 8 }, { type: 'op', val: '÷' } ],
-          [ { type: 'numSlot', slotIdx: 3 }, { type: 'numSlot', slotIdx: 4 }, { type: 'numSlot', slotIdx: 5 }, { type: 'op', val: '×' } ],
-          [ { type: 'numSlot', slotIdx: 0 }, { type: 'numSlot', slotIdx: 1 }, { type: 'numSlot', slotIdx: 2 }, { type: 'op', val: '-' } ],
-          [ { type: 'numSlot', slotIdx: 9 }, { type: 'op', val: '(' }, { type: 'op', val: ')' }, { type: 'op', val: '+' } ]
+          [ { type: 'action', val: '⌫' }, { type: 'action', val: 'C' }, { type: 'op', val: '^' }, { type: 'op', val: '÷' } ],
+          [ { type: 'numSlot', slotIdx: 6 }, { type: 'numSlot', slotIdx: 7 }, { type: 'numSlot', slotIdx: 8 }, { type: 'op', val: '×' } ],
+          [ { type: 'numSlot', slotIdx: 3 }, { type: 'numSlot', slotIdx: 4 }, { type: 'numSlot', slotIdx: 5 }, { type: 'op', val: '-' } ],
+          [ { type: 'numSlot', slotIdx: 0 }, { type: 'numSlot', slotIdx: 1 }, { type: 'numSlot', slotIdx: 2 }, { type: 'op', val: '+' } ],
+          [ { type: 'op', val: '(' }, { type: 'op', val: ')' }, { type: 'op', val: '√' }, { type: 'action', val: '=' } ]
         ];
 
         keypadLayout.forEach(row => {
@@ -1793,7 +2185,9 @@
             const btn = document.createElement('button');
 
             if (item.type === 'numSlot') {
+              // Check if a subtotal variable can occupy this slot, or if slot has a number
               const slot = numSlots[item.slotIdx];
+
               if (slot && slot.active) {
                 const numVal = slot.val;
                 const count = slot.count;
@@ -1817,8 +2211,22 @@
                   btn.innerHTML = `${numVal}`;
                 }
               } else {
-                btn.className = 'calc-btn calc-num-btn calc-num-disabled';
-                btn.innerHTML = `-`;
+                // If number slot is empty, check if we have unused subtotal variable cards (a, b...)
+                const varIdx = item.slotIdx - sortedUniqueVals.length;
+                if (varIdx >= 0 && varIdx < activeVars.length) {
+                  const varItem = activeVars[varIdx];
+                  const hideIntermediate = this.hideIntermediateToggle && this.hideIntermediateToggle.checked;
+                  btn.className = 'calc-btn calc-var-btn';
+                  btn.innerHTML = hideIntermediate ? `${varItem.varName}` : `${varItem.varName} <sup class="calc-badge">${varItem.val}</sup>`;
+                  btn.addEventListener('click', () => {
+                    AudioFX.playClick();
+                    varItem.used = true;
+                    this.pushToken({ type: 'var', val: varItem.varName, realVal: varItem.val, varId: varItem.varName });
+                  });
+                } else {
+                  btn.className = 'calc-btn calc-num-btn calc-num-disabled';
+                  btn.innerHTML = `-`;
+                }
               }
             } else if (item.type === 'op') {
               btn.className = 'calc-btn calc-op-btn';
@@ -1828,18 +2236,31 @@
                 this.pushToken({ type: 'op', val: item.val });
               });
             } else if (item.type === 'action') {
-              btn.className = 'calc-btn calc-action-btn';
               btn.textContent = item.val;
               if (item.val === '⌫') {
+                btn.className = 'calc-btn calc-action-btn';
                 btn.addEventListener('click', () => {
                   AudioFX.playClick();
                   this.popToken();
                 });
               } else if (item.val === 'C') {
+                btn.className = 'calc-btn calc-action-btn';
                 btn.addEventListener('click', () => {
                   AudioFX.playClick();
                   this.clearExpression();
                 });
+              } else if (item.val === '=') {
+                const isSubtotalEnabled = this.subtotalModeToggle && this.subtotalModeToggle.checked;
+                if (!isSubtotalEnabled) {
+                  btn.className = 'calc-btn calc-action-btn calc-num-disabled';
+                  btn.title = "ต้องเปิด 'โหมดคำนวณทีละขั้นด้วยปุ่ม =' ในการตั้งค่าก่อนจึงจะสามารถกดใช้งานปุ่มนี้ได้";
+                } else {
+                  btn.className = 'calc-btn calc-action-btn';
+                  btn.addEventListener('click', () => {
+                    AudioFX.playClick();
+                    this.handleSubtotalEqual();
+                  });
+                }
               }
             }
 
@@ -1848,7 +2269,38 @@
         });
       }
 
-    
+      handleSubtotalEqual() {
+        if (!this.subtotalModeToggle || !this.subtotalModeToggle.checked) {
+          AudioFX.playClick();
+          this.checkAnswer();
+          return;
+        }
+
+        if (this.expressionTokens.length === 0) return;
+
+        const val = this.evaluateExpression();
+        if (val === null || !Number.isFinite(val)) {
+          AudioFX.playError();
+          this.showAlert('สมการย่อยไม่ถูกต้อง ไม่สามารถรวมผลลัพธ์ด้วย = ได้', 'danger');
+          return;
+        }
+
+        const formattedVal = Number.isInteger(val) ? val : Math.round(val * 100) / 100;
+        const varName = String.fromCharCode(97 + this.subtotalSteps.length); // 'a', 'b', 'c'...
+        let exprTextStr = this.expressionTokens.map(t => t.val).join(' ');
+
+        this.subtotalSteps.push({
+          expr: exprTextStr,
+          varName: varName,
+          val: formattedVal,
+          used: false
+        });
+
+        this.variableMap[varName] = formattedVal;
+        this.expressionTokens = [];
+        this.render();
+      }
+
       updateBossUI(isHit = false) {
         const titleEl = document.getElementById('bossTitle');
         const textEl = document.getElementById('bossHpText');
@@ -1882,7 +2334,8 @@
 
       render() {
         if (this.mode === 'calc') this.renderCalculatorKeypad();
-        this.targetNumEl.textContent = this.targetNumber;
+        if (this.targetNumEl) this.targetNumEl.textContent = this.targetNumber;
+        if (this.cardTargetNumEl) this.cardTargetNumEl.textContent = this.targetNumber;
 
         // Render Workspace Tiles
         this.workspaceDropzone.innerHTML = '';
@@ -1939,7 +2392,24 @@
           this.unusedNumbersFlex.appendChild(card);
         });
 
-        // Formatted text output
+        // Formatted text output & step history check
+        const hideIntermediate = this.hideIntermediateToggle && this.hideIntermediateToggle.checked;
+        const historyContainer = document.getElementById('historyStepContainer');
+
+        if (historyContainer) {
+          historyContainer.innerHTML = '';
+          this.subtotalSteps.forEach(step => {
+            const div = document.createElement('div');
+            div.className = 'history-step-line';
+            if (hideIntermediate) {
+              div.textContent = `${step.expr} = ${step.varName}`;
+            } else {
+              div.textContent = `${step.expr} = ${step.val} (${step.varName})`;
+            }
+            historyContainer.appendChild(div);
+          });
+        }
+
         if (this.expressionTokens.length === 0) {
           this.formattedExprText.textContent = '--';
           this.formattedEvalBadge.textContent = '';
@@ -1960,12 +2430,17 @@
           }
 
           this.formattedExprText.textContent = textStr;
-          const val = this.evaluateExpression();
-          if (val !== null && Number.isFinite(val)) {
-            const formatted = Number.isInteger(val) ? val : Math.round(val * 100) / 100;
-            this.formattedEvalBadge.textContent = `= ${formatted}`;
-          } else {
+
+          if (hideIntermediate) {
             this.formattedEvalBadge.textContent = '= ?';
+          } else {
+            const val = this.evaluateExpression();
+            if (val !== null && Number.isFinite(val)) {
+              const formatted = Number.isInteger(val) ? val : Math.round(val * 100) / 100;
+              this.formattedEvalBadge.textContent = `= ${formatted}`;
+            } else {
+              this.formattedEvalBadge.textContent = '= ?';
+            }
           }
         }
       }
@@ -1992,6 +2467,9 @@
         if (popped.type === 'num' && popped.id !== undefined) {
           const item = this.givenNumbers.find(n => n.id === popped.id);
           if (item) item.used = false;
+        } else if (popped.type === 'var' && popped.varId !== undefined) {
+          const vItem = this.subtotalSteps.find(s => s.varName === popped.varId);
+          if (vItem) vItem.used = false;
         }
         this.hideAlert();
         this.render();
@@ -2003,6 +2481,9 @@
           if (removed.type === 'num' && removed.id !== undefined) {
             const item = this.givenNumbers.find(n => n.id === removed.id);
             if (item) item.used = false;
+          } else if (removed.type === 'var' && removed.varId !== undefined) {
+            const vItem = this.subtotalSteps.find(s => s.varName === removed.varId);
+            if (vItem) vItem.used = false;
           }
           this.hideAlert();
           this.render();
@@ -2012,6 +2493,9 @@
       clearExpression() {
         this.expressionTokens = [];
         this.givenNumbers.forEach(n => n.used = false);
+        this.subtotalSteps.forEach(s => s.used = false);
+        this.subtotalSteps = [];
+        this.variableMap = {};
         this.hideAlert();
         this.render();
       }
@@ -2027,6 +2511,7 @@
 
         try {
           let exprStr = this.expressionTokens.map(t => {
+            if (t.type === 'var') return this.variableMap[t.val] !== undefined ? this.variableMap[t.val] : 0;
             if (t.val === '×') return '*';
             if (t.val === '÷') return '/';
             return t.val;
@@ -2097,22 +2582,46 @@
           } else {
             AudioFX.playError();
             this.streak = 0;
+
+            // Boss Heals +2.5% Max HP when answer difference >= 100 (0 HP Damage)!
+            const healAmount = Math.round(this.bossMaxHp * 0.025);
+            this.bossHp = Math.min(this.bossMaxHp, this.bossHp + healAmount);
+            this.updateBossUI(false);
           }
         }
 
-        // Calculate Speed Attack Combo Multiplier
+        // Calculate Speed Attack Combo Multiplier & Handle Dynamic Timing
         let multiplier = 1.0;
         if (baseDamage > 0) {
-          if (this.prevSolveTime !== null && elapsedSec < this.prevSolveTime) {
-            this.comboCount += 1;
+          if (this.prevSolveTime !== null) {
+            if (elapsedSec < this.prevSolveTime) {
+              // Solved faster -> Increase combo count & +0.1x multiplier
+              this.comboCount += 1;
+              multiplier = 1.0 + (this.comboCount * 0.1);
+              this.prevSolveTime = elapsedSec;
+            } else if (Math.abs(elapsedSec - this.prevSolveTime) < 0.2) {
+              // Solved in equal time -> Keep current combo multiplier
+              multiplier = 1.0 + (this.comboCount * 0.1);
+              this.prevSolveTime = elapsedSec;
+            } else {
+              // Solved slower -> Reset combo
+              this.comboCount = 0;
+              multiplier = 1.0;
+              this.prevSolveTime = elapsedSec;
+            }
           } else {
-            this.comboCount = 0;
+            this.comboCount = 1;
+            multiplier = 1.0;
+            this.prevSolveTime = elapsedSec;
           }
-          this.prevSolveTime = elapsedSec;
-          multiplier = 1.0 + (this.comboCount * 0.1);
         } else {
           this.comboCount = 0;
           this.prevSolveTime = null;
+        }
+
+        if (this.comboInterval) {
+          clearInterval(this.comboInterval);
+          this.comboInterval = null;
         }
 
         const finalDamage = Math.round(baseDamage * multiplier);
@@ -2134,7 +2643,8 @@
         } else if (finalDamage > 0) {
           this.showAlert(`คำตอบคือ ${formatted} (คลาดเคลื่อน ±${Math.round(diff * 100) / 100})${comboMsg} ตี BOSS -${finalDamage} HP`, 'info');
         } else {
-          this.showAlert(`คลาดเคลื่อนมากเกินไป! ผลลัพธ์ของคุณคือ ${formatted} (เป้าหมายคือ ${this.targetNumber}) ไม่เกิดความเสียหาย (0 HP)`, 'danger');
+          const healAmount = Math.round(this.bossMaxHp * 0.025);
+          this.showAlert(`คลาดเคลื่อนมากเกินไป! ผลลัพธ์ของคุณคือ ${formatted} (เป้าหมายคือ ${this.targetNumber}) ไม่เกิดความเสียหาย (0 HP) 👾 Boss ฟื้นฟู +${healAmount} HP (+2.5%)`, 'danger');
         }
 
         if (this.bossHp <= 0) {
