@@ -1618,6 +1618,12 @@
         <ul>
           <li>ในโหมดเครื่องคิดเลข หากเปิด <b>"โหมดคำนวณทีละขั้นด้วยปุ่ม ="</b> ผู้เล่นสามารถกด <code>=</code> เพื่อรวมผลลัพธ์ย่อยเป็นไพ่ตัวแปรชั่วคราว (<code>a</code>, <code>b</code>, <code>c</code>...) นำไปใช้คำนวณในขั้นตอนถัดไปได้</li>
         </ul>
+
+        <h3>⏱️ 5. ระบบเติมตัวเลขและวงเล็บปิดอัตโนมัติ (Auto-Close & Timeout Auto-Submit)</h3>
+        <ul>
+          <li><b>การปิดวงเล็บอัตโนมัติ:</b> ผู้เล่นไม่จำเป็นต้องกดใส่วงเล็บปิด <code>)</code> ให้ครบ ระบบจะเติมวงเล็บปิดท้ายให้อัตโนมัติเมื่อกดตรวจคำตอบหรือกด <code>=</code></li>
+          <li><b>ระบบส่งคำตอบอัตโนมัติเมื่อหมดเวลา:</b> หากหมดเวลาแล้วยังมีตัวเลขที่ไม่ได้ใช้ ระบบจะเติมตัวเลขที่เหลือจากน้อยไปมากให้อัตโนมัติ (หากค้างเครื่องหมายไว้จะเติมเลขทันที หากค้างตัวเลขไว้จะเติม <code>+</code> แล้วตามด้วยตัวเลข) และปิดวงเล็บส่งคำตอบให้อัตโนมัติทันที</li>
+        </ul>
       </div>
     </div>
   </div>
@@ -2805,21 +2811,25 @@
               clearInterval(this.timerInterval);
               this.timerInterval = null;
               this.updateTimerBadge();
-              AudioFX.playError();
               
-              this.streak = 0;
-              this.streakValEl.textContent = this.streak;
-
-              // Boss Healing +2.5% of max HP on timeout!
-              const healAmount = Math.round(this.bossMaxHp * 0.025);
-              this.bossHp = Math.min(this.bossMaxHp, this.bossHp + healAmount);
-              this.updateBossUI(false);
-
-              if (this.autoNextToggle.checked) {
-                this.showAlert(`หมดเวลาแล้ว! 👾 Boss ฟื้นฟู +${healAmount} HP (+2.5%) — กำลังเปลี่ยนข้อถัดไป...`, 'danger');
-                setTimeout(() => this.newPuzzle(), 1200);
+              if (!this.isAnswerChecked && !this.isSolutionRevealed) {
+                // Auto-fill remaining numbers, auto-close parentheses, and submit answer on timeout!
+                this.handleTimeoutAutoSubmit();
               } else {
-                this.showAlert(`หมดเวลาแล้ว! 👾 Boss ฟื้นฟู +${healAmount} HP (+2.5%)`, 'danger');
+                AudioFX.playError();
+                this.streak = 0;
+                this.streakValEl.textContent = this.streak;
+
+                const healAmount = Math.round(this.bossMaxHp * 0.025);
+                this.bossHp = Math.min(this.bossMaxHp, this.bossHp + healAmount);
+                this.updateBossUI(false);
+
+                if (this.autoNextToggle.checked) {
+                  this.showAlert(`หมดเวลาแล้ว! 👾 Boss ฟื้นฟู +${healAmount} HP (+2.5%) — กำลังเปลี่ยนข้อถัดไป...`, 'danger');
+                  setTimeout(() => this.newPuzzle(), 1200);
+                } else {
+                  this.showAlert(`หมดเวลาแล้ว! 👾 Boss ฟื้นฟู +${healAmount} HP (+2.5%)`, 'danger');
+                }
               }
             }
           }, 1000);
@@ -3108,6 +3118,9 @@
         }
 
         if (this.expressionTokens.length === 0) return;
+
+        // Auto-close missing parentheses before performing subtotal
+        this.autoCloseParenthesesInTokens();
 
         const val = this.evaluateExpression();
         if (val === null || !Number.isFinite(val)) {
@@ -3410,6 +3423,53 @@
         this.resetHintTimer();
       }
 
+      autoCloseParenthesesInTokens() {
+        let openCount = 0;
+        let closeCount = 0;
+        this.expressionTokens.forEach(t => {
+          if (t.val === '(') openCount++;
+          if (t.val === ')') closeCount++;
+        });
+        const missing = openCount - closeCount;
+        for (let i = 0; i < missing; i++) {
+          this.expressionTokens.push({ type: 'op', val: ')' });
+        }
+      }
+
+      handleTimeoutAutoSubmit() {
+        if (this.isAnswerChecked || this.isSolutionRevealed) return;
+
+        // Step 1: Fill all unused given numbers
+        const unused = this.givenNumbers.filter(n => !n.used);
+        if (unused.length > 0) {
+          unused.sort((a, b) => a.val - b.val);
+
+          for (const item of unused) {
+            item.used = true;
+            const lastToken = this.expressionTokens.length > 0 ? this.expressionTokens[this.expressionTokens.length - 1] : null;
+            const isLastOp = lastToken && lastToken.type === 'op' && lastToken.val !== ')';
+
+            if (this.expressionTokens.length === 0 || isLastOp) {
+              this.expressionTokens.push({ type: 'num', val: item.val, id: item.id });
+            } else {
+              this.expressionTokens.push({ type: 'op', val: '+' });
+              this.expressionTokens.push({ type: 'num', val: item.val, id: item.id });
+            }
+          }
+        }
+
+        // Step 2: Auto-close any missing closing parentheses
+        this.autoCloseParenthesesInTokens();
+
+        // Step 3: Render updated expression UI
+        this.render();
+
+        // Step 4: Automatically check answer
+        if (this.expressionTokens.length > 0) {
+          this.checkAnswer();
+        }
+      }
+
       evaluateExpression() {
         if (this.expressionTokens.length === 0) return null;
 
@@ -3430,6 +3490,13 @@
             return t.val;
           }).join('');
 
+          // Auto-close missing parentheses in string evaluation
+          let openCount = (exprStr.match(/\(/g) || []).length;
+          let closeCount = (exprStr.match(/\)/g) || []).length;
+          if (openCount > closeCount) {
+            exprStr += ')'.repeat(openCount - closeCount);
+          }
+
           exprStr = exprStr.replace(/√\s*\(([^)]+)\)/g, "Math.sqrt($1)");
           exprStr = exprStr.replace(/√\s*(\d+(?:\.\d+)?)/g, "Math.sqrt($1)");
           exprStr = exprStr.replace(/\^/g, "**");
@@ -3449,6 +3516,9 @@
           this.showAlert('คุณเปิดดูเฉลยแล้ว ไม่สามารถกดตรวจคำตอบเพื่อโจมตี Boss ในข้อนี้ได้ (กด "ข้อถัดไป" เพื่อสู้ต่อ)', 'danger');
           return;
         }
+
+        // Auto-close missing parentheses before checking answer
+        this.autoCloseParenthesesInTokens();
 
         const unused = this.givenNumbers.filter(n => !n.used);
         if (unused.length > 0) {
