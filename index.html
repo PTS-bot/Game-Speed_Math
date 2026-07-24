@@ -493,6 +493,43 @@
       to { opacity: 1; }
     }
 
+    /* TIMER BADGE AT TOP-LEFT CORNER OF EXPRESSION DISPLAY BOX */
+    .timer-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: var(--font-display);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #1D4ED8;
+      background: #EFF6FF;
+      border: 1px solid #3B82F6;
+      padding: 2px 8px;
+      border-radius: 2px;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    body.dark-mode .timer-badge {
+      color: #60A5FA;
+      background: rgba(59, 130, 246, 0.25);
+      border-color: #3B82F6;
+    }
+
+    .timer-badge.warn {
+      color: #DC2626;
+      background: #FEE2E2;
+      border-color: #EF4444;
+      animation: severePulse 1s infinite alternate;
+    }
+
+    body.dark-mode .timer-badge.warn {
+      color: #FCA5A5;
+      background: rgba(239, 68, 68, 0.25);
+      border-color: #EF4444;
+    }
+
     /* SMART HINT GHOST STYLES & ANIMATIONS */
     .ghost-hint-chip {
       display: inline-flex;
@@ -722,9 +759,9 @@
       color: var(--ink);
     }
 
-    /* STATS ROW (WITH COUNTDOWN TIMER BADGE) */
+    /* STATS ROW (HIDDEN BY DEFAULT PER USER REQUEST) */
     .stats-row {
-      display: grid;
+      display: none;
       grid-template-columns: repeat(4, 1fr);
       gap: 8px;
       margin-bottom: 16px;
@@ -1267,6 +1304,10 @@
           SPEED MATH — VISUAL FIELD GUIDE
         </div>
         <div style="display: flex; gap: 5px; align-items: center;">
+          <button class="theme-toggle-btn" id="settingsBtn" title="ตั้งค่าระดับเกม">
+            <span>⚙️</span>
+            <span>ตั้งค่า</span>
+          </button>
           <button class="theme-toggle-btn" id="rulesBtn" title="ดูรายละเอียดกติกาเกม">
             <span>📖</span>
             <span>กติกา</span>
@@ -1303,7 +1344,11 @@
 
       <!-- PLAIN TEXT EXPRESSION DISPLAY (MOVED TO TOP RIGHT BELOW BOSS HP & TARGET IN CALC MODE) -->
       <div class="text-result-section">
-        <!-- NOT PERFECT BADGE FLOATING OUTSIDE/ABOVE THE BOX -->
+        <!-- TIMER BADGE FLOATING OUTSIDE/ABOVE THE BOX (TOP-LEFT) -->
+        <div id="timerBadge" class="timer-badge" style="position: absolute; top: -14px; left: 8px; display: none; z-index: 10;">
+          ⏱️ --s
+        </div>
+        <!-- NOT PERFECT BADGE FLOATING OUTSIDE/ABOVE THE BOX (TOP-RIGHT) -->
         <div id="notPerfectBadge" class="not-perfect-badge" style="position: absolute; top: -14px; right: 8px; display: none; z-index: 10;">
           ⚠️ ไม่ PERFECT
         </div>
@@ -1404,8 +1449,10 @@
 
     </main>
 
-    <!-- STATS ROW (WITH COUNTDOWN TIMER BADGE) -->
-    <div class="stats-row">
+    </main>
+
+    <!-- STATS ROW (HIDDEN BY DEFAULT PER USER REQUEST) -->
+    <div class="stats-row" style="display: none;">
       <div class="stat-card">
         <div class="stat-label">เวลาคงเหลือ</div>
         <div class="stat-value" id="timerVal">--</div>
@@ -1424,87 +1471,107 @@
       </div>
     </div>
 
-    <!-- SETTINGS PANEL -->
-    <section class="settings-panel">
-      <div class="settings-title">
-        <span>ตั้งค่าระดับเกม (Game Settings)</span>
-        <span class="settings-hint-badge">*ค่าที่ปรับจะมีผลในข้อถัดไป</span>
+  </div>
+
+  <!-- GAME SETTINGS MODAL -->
+  <div class="modal-overlay" id="settingsModal" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span>⚙️ ตั้งค่าระดับเกม (Game Settings)</span>
+        <button class="modal-close-btn" id="closeSettingsBtn">&times;</button>
       </div>
-      <div class="settings-grid">
-        <div class="form-group">
-          <label>จำนวนเลขโจทย์สุ่ม (2 - 9)</label>
-          <div class="range-input-group">
-            <input type="range" id="countSlider" min="2" max="9" value="5">
-            <input type="number" id="countInput" class="input-control" min="2" max="9" value="5" style="width: 55px; flex: none;">
-          </div>
-        </div>
-        <div class="form-group">
-          <label>ช่วงเลขสุ่ม (0 - 9999)</label>
-          <div style="display: flex; gap: 6px;">
-            <input type="number" id="minNumInput" class="input-control" min="0" max="9999" value="0" placeholder="ต่ำสุด">
-            <input type="number" id="maxNumInput" class="input-control" min="1" max="9999" value="9" placeholder="สูงสุด">
-          </div>
-        </div>
-        <div class="form-group">
-          <label>เป้าหมายผลลัพธ์ (1 - 9999)</label>
-          <div style="display: flex; gap: 6px;">
-            <input type="number" id="minTargetInput" class="input-control" min="1" max="9999" value="100" placeholder="ต่ำสุด">
-            <input type="number" id="maxTargetInput" class="input-control" min="1" max="9999" value="999" placeholder="สูงสุด">
-          </div>
-        </div>
-        
-        <!-- ROW 2 SETTINGS -->
-        <div class="form-group" style="grid-column: span 1.5;">
-          <label>เวลาต่อข้อ (0 = ไม่นับเวลา)</label>
-          <input type="number" id="timeLimitInput" class="input-control" min="0" max="300" value="0" placeholder="วินาที (0 = ไม่จำกัด)">
-        </div>
-        <div class="form-group" style="grid-column: span 1.5; justify-content: flex-end;">
-          <label class="toggle-checkbox-label">
-            <input type="checkbox" id="autoNextToggle" checked>
-            หมดเวลาเปลี่ยนข้อถัดไปทันที
-          </label>
-        </div>
-        <div class="form-group" style="grid-column: span 3;">
-          <label class="toggle-checkbox-label">
-            <input type="checkbox" id="uniqueNumbersToggle">
-            ป้องกันเลขโจทย์สุ่มซ้ำกัน (เปิดเพื่อไม่ให้สุ่มได้ตัวเลขซ้ำกันในข้อเดียวกัน)
-          </label>
-        </div>
-        <div class="form-group" style="grid-column: span 3;">
-          <label class="toggle-checkbox-label">
-            <input type="checkbox" id="hideIntermediateToggle">
-            โหมดซ่อนผลลัพธ์คำนวณชั่วคราวระหว่างทาง (Hard Mode — แสดง = ? ตลอดเวลา)
-          </label>
-        </div>
-        <div class="form-group" style="grid-column: span 3;">
-          <label class="toggle-checkbox-label">
-            <input type="checkbox" id="subtotalModeToggle" checked>
-            โหมดคำนวณทีละขั้นด้วยปุ่ม = (Step-by-Step Subtotal Mode ในเครื่องคิดเลข)
-          </label>
-        </div>
-        <div class="form-group" style="grid-column: span 3;">
-          <label class="toggle-checkbox-label">
-            <input type="checkbox" id="warningModeToggle" checked>
-            <span>แจ้งเตือนไม่ PERFECT แบบ Realtime (แสดงป้ายเตือนทันทีเมื่อสมการเบี่ยงจากเฉลยตรง)</span>
-          </label>
-          <div id="warningThresholdGroup" class="warning-threshold-group">
-            <label class="warning-threshold-label">
-              เกณฑ์เตือนผลคลาดเคลื่อนวิกฤต (±):
-            </label>
-            <div class="warning-threshold-controls">
-              <input type="range" id="warningThresholdSlider" min="1" max="200" value="100">
-              <input type="number" id="warningThresholdInput" class="input-control" min="1" max="200" value="100">
+      <div class="modal-body">
+        <div class="settings-grid" style="grid-template-columns: 1fr;">
+          <div class="form-group">
+            <label>จำนวนเลขโจทย์สุ่ม (2 - 9)</label>
+            <div class="range-input-group">
+              <input type="range" id="countSlider" min="2" max="9" value="5">
+              <input type="number" id="countInput" class="input-control" min="2" max="9" value="5" style="width: 55px; flex: none;">
             </div>
           </div>
-        </div>
-        <div class="form-group" style="grid-column: span 3;">
-          <label class="toggle-checkbox-label">
-            <input type="checkbox" id="hintModeToggle" checked>
-            โหมดคำใบ้อัจฉริยะ (Smart Hint Mode — แสดงตัวเลข/เครื่องหมายคำใบ้จางๆ เมื่อคิดนานเกิน 5 วินาที)
-          </label>
+          <div class="form-group">
+            <label>ช่วงเลขสุ่ม (0 - 9999)</label>
+            <div style="display: flex; gap: 6px;">
+              <input type="number" id="minNumInput" class="input-control" min="0" max="9999" value="0" placeholder="ต่ำสุด">
+              <input type="number" id="maxNumInput" class="input-control" min="1" max="9999" value="9" placeholder="สูงสุด">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>เป้าหมายผลลัพธ์ (1 - 9999)</label>
+            <div style="display: flex; gap: 6px;">
+              <input type="number" id="minTargetInput" class="input-control" min="1" max="9999" value="100" placeholder="ต่ำสุด">
+              <input type="number" id="maxTargetInput" class="input-control" min="1" max="9999" value="999" placeholder="สูงสุด">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>เวลาต่อข้อ (0 = ไม่นับเวลา)</label>
+            <input type="number" id="timeLimitInput" class="input-control" min="0" max="300" value="0" placeholder="วินาที (0 = ไม่จำกัด)">
+          </div>
+
+          <div class="form-group">
+            <label class="toggle-checkbox-label">
+              <input type="checkbox" id="timerBadgeToggle" checked>
+              <span>แสดงเวลานับถอยหลังบนกรอบแสดงผลคำนวณ (มุมซ้ายบน)</span>
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label class="toggle-checkbox-label">
+              <input type="checkbox" id="showStatsToggle">
+              <span>แสดงแถบสถิติคะแนนและเวลา (เวลาคงเหลือ, คะแนนรวม, Streak, ข้อที่ผ่าน)</span>
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label class="toggle-checkbox-label">
+              <input type="checkbox" id="autoNextToggle" checked>
+              <span>หมดเวลาเปลี่ยนข้อถัดไปทันที</span>
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="toggle-checkbox-label">
+              <input type="checkbox" id="uniqueNumbersToggle">
+              <span>ป้องกันเลขโจทย์สุ่มซ้ำกัน (เปิดเพื่อไม่ให้สุ่มได้ตัวเลขซ้ำกันในข้อเดียวกัน)</span>
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="toggle-checkbox-label">
+              <input type="checkbox" id="hideIntermediateToggle">
+              <span>โหมดซ่อนผลลัพธ์คำนวณชั่วคราวระหว่างทาง (Hard Mode — แสดง = ? ตลอดเวลา)</span>
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="toggle-checkbox-label">
+              <input type="checkbox" id="subtotalModeToggle" checked>
+              <span>โหมดคำนวณทีละขั้นด้วยปุ่ม = (Step-by-Step Subtotal Mode ในเครื่องคิดเลข)</span>
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="toggle-checkbox-label">
+              <input type="checkbox" id="warningModeToggle" checked>
+              <span>แจ้งเตือนไม่ PERFECT แบบ Realtime (มุมขวาบน)</span>
+            </label>
+            <div id="warningThresholdGroup" class="warning-threshold-group">
+              <label class="warning-threshold-label">
+                เกณฑ์เตือนผลคลาดเคลื่อนวิกฤต (±):
+              </label>
+              <div class="warning-threshold-controls">
+                <input type="range" id="warningThresholdSlider" min="1" max="200" value="100">
+                <input type="number" id="warningThresholdInput" class="input-control" min="1" max="200" value="100">
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="toggle-checkbox-label">
+              <input type="checkbox" id="hintModeToggle" checked>
+              <span>โหมดคำใบ้อัจฉริยะ (Smart Hint Mode — แสดงตัวเลข/เครื่องหมายคำใบ้จางๆ เมื่อคิดนานเกิน 5 วินาที)</span>
+            </label>
+          </div>
         </div>
       </div>
-    </section>
+    </div>
+  </div>
 
   </div>
 
@@ -1911,6 +1978,8 @@
         this.warningThresholdSlider = document.getElementById('warningThresholdSlider');
         this.warningThresholdInput = document.getElementById('warningThresholdInput');
         this.timerValEl = document.getElementById('timerVal');
+        this.showStatsToggle = document.getElementById('showStatsToggle');
+        this.timerBadgeToggle = document.getElementById('timerBadgeToggle');
 
         this.targetNumEl = document.getElementById('targetNum');
         this.cardTargetNumEl = document.getElementById('cardTargetNum');
@@ -1932,6 +2001,7 @@
 
         this.bindEvents();
         this.initRulesModal();
+        this.initSettingsModal();
         this.minTargetInput.addEventListener('change', () => {
           let val = parseInt(this.minTargetInput.value, 10);
           if (isNaN(val) || val < 1) {
@@ -1961,6 +2031,30 @@
           rulesModal.addEventListener('click', (e) => {
             if (e.target === rulesModal) {
               rulesModal.style.display = 'none';
+            }
+          });
+        }
+      }
+
+      initSettingsModal() {
+        const settingsBtn = document.getElementById('settingsBtn');
+        const settingsModal = document.getElementById('settingsModal');
+        const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+
+        if (settingsBtn && settingsModal && closeSettingsBtn) {
+          settingsBtn.addEventListener('click', () => {
+            AudioFX.playClick();
+            settingsModal.style.display = 'flex';
+          });
+
+          closeSettingsBtn.addEventListener('click', () => {
+            AudioFX.playClick();
+            settingsModal.style.display = 'none';
+          });
+
+          settingsModal.addEventListener('click', (e) => {
+            if (e.target === settingsModal) {
+              settingsModal.style.display = 'none';
             }
           });
         }
@@ -2021,6 +2115,20 @@
               this.warningThresholdSlider.value = val;
               this.resetHintTimer();
             }
+          });
+        }
+
+        if (this.showStatsToggle) {
+          this.showStatsToggle.addEventListener('change', () => {
+            AudioFX.playClick();
+            this.render();
+          });
+        }
+
+        if (this.timerBadgeToggle) {
+          this.timerBadgeToggle.addEventListener('change', () => {
+            AudioFX.playClick();
+            this.updateTimerBadge();
           });
         }
 
@@ -2625,15 +2733,37 @@
         return tiles.length;
       }
 
+      updateTimerBadge() {
+        const timerBadgeEl = document.getElementById('timerBadge');
+        if (!timerBadgeEl) return;
+
+        const limit = parseInt(this.timeLimitInput.value, 10) || 0;
+        const showBadgeEnabled = this.timerBadgeToggle && this.timerBadgeToggle.checked;
+
+        if (limit > 0 && this.remainingTime > 0 && showBadgeEnabled && !this.isSolutionRevealed && !this.isAnswerChecked) {
+          timerBadgeEl.style.display = 'inline-flex';
+          timerBadgeEl.textContent = `⏱️ ${this.remainingTime}s`;
+          if (this.remainingTime <= 5) {
+            timerBadgeEl.className = 'timer-badge warn';
+          } else {
+            timerBadgeEl.className = 'timer-badge';
+          }
+        } else {
+          timerBadgeEl.style.display = 'none';
+        }
+      }
+
       startTimer() {
         if (this.timerInterval) clearInterval(this.timerInterval);
 
         const limit = parseInt(this.timeLimitInput.value, 10) || 0;
         this.timerValEl.classList.remove('timer-warn');
+        this.updateTimerBadge();
 
         if (limit > 0) {
           this.remainingTime = limit;
           this.timerValEl.textContent = `${this.remainingTime}s`;
+          this.updateTimerBadge();
 
           this.timerInterval = setInterval(() => {
             this.remainingTime--;
@@ -2641,10 +2771,12 @@
               this.timerValEl.classList.add('timer-warn');
             }
             this.timerValEl.textContent = `${this.remainingTime}s`;
+            this.updateTimerBadge();
 
             if (this.remainingTime <= 0) {
               clearInterval(this.timerInterval);
               this.timerInterval = null;
+              this.updateTimerBadge();
               AudioFX.playError();
               
               this.streak = 0;
@@ -2665,6 +2797,7 @@
           }, 1000);
         } else {
           this.timerValEl.textContent = '--';
+          this.updateTimerBadge();
         }
       }
 
@@ -3004,6 +3137,14 @@
         if (this.targetNumEl) this.targetNumEl.textContent = this.targetNumber;
         if (this.cardTargetNumEl) this.cardTargetNumEl.textContent = this.targetNumber;
 
+        this.updateTimerBadge();
+
+        const statsRowEl = document.querySelector('.stats-row');
+        if (statsRowEl) {
+          const showStatsEnabled = this.showStatsToggle && this.showStatsToggle.checked;
+          statsRowEl.style.display = showStatsEnabled ? 'grid' : 'none';
+        }
+
         const ghostTokens = (this.activeHintData && this.activeHintData.ghostTokens) ? this.activeHintData.ghostTokens : [];
 
         // Render Not Perfect Badge (Two Levels) — controlled by warningModeToggle
@@ -3018,7 +3159,7 @@
             // Level 2: Severe warning when best achievable deviation >= severeLimit (user configurable for training)
             if (this.bestAchievableDiff !== null && this.bestAchievableDiff >= severeLimit) {
               notPerfectBadgeEl.className = 'not-perfect-badge severe';
-              notPerfectBadgeEl.textContent = `❌ ห่างเกิน ${severeLimit} — ตอบไปก็แพ้`;
+              notPerfectBadgeEl.textContent = `❌ ห่างเกิน ${severeLimit}`;
             } else {
               // Level 1: Not perfect but still salvageable
               notPerfectBadgeEl.className = 'not-perfect-badge';
