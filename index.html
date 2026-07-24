@@ -133,6 +133,8 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 10px;
+      flex-wrap: wrap;
+      gap: 8px;
     }
 
     .corner-brand {
@@ -777,6 +779,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 4px;
     }
 
     .settings-hint-badge {
@@ -796,6 +800,7 @@
       display: flex;
       flex-direction: column;
       gap: 4px;
+      min-width: 0;
     }
 
     .form-group label {
@@ -804,7 +809,8 @@
       text-transform: uppercase;
       letter-spacing: 0.1em;
       color: var(--ink-soft);
-      white-space: nowrap;
+      white-space: normal;
+      word-break: break-word;
     }
 
     .input-control {
@@ -818,6 +824,7 @@
       height: 36px;
       width: 100%;
       outline: none;
+      box-sizing: border-box;
     }
 
     .range-input-group {
@@ -854,9 +861,9 @@
 
     /* Checkbox / Toggle Switch Label */
     .toggle-checkbox-label {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
       font-family: var(--font-display);
       font-size: 10px;
       text-transform: uppercase;
@@ -864,22 +871,67 @@
       color: var(--ink);
       cursor: pointer;
       margin-top: 4px;
+      line-height: 1.4;
+      word-break: break-word;
     }
 
     .toggle-checkbox-label input[type="checkbox"] {
       accent-color: var(--orange);
-      width: 15px;
-      height: 15px;
+      width: 16px;
+      height: 16px;
       cursor: pointer;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .warning-threshold-group {
+      margin-top: 6px;
+      padding-left: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .warning-threshold-label {
+      font-family: var(--font-display);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink-soft);
+      white-space: normal;
+      word-break: break-word;
+    }
+
+    .warning-threshold-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .warning-threshold-controls input[type="range"] {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .warning-threshold-controls input[type="number"] {
+      width: 65px;
+      flex: none;
     }
 
     @media (max-width: 640px) {
-      .app-container { padding: 10px 8px 32px; }
-      .game-board { padding: 14px 12px 16px; }
-      .settings-grid { grid-template-columns: 1fr !important; }
+      .app-container { padding: 10px 6px 28px; }
+      .game-board { padding: 12px 10px 14px; }
+      .settings-panel { padding: 12px 10px; }
+      .settings-grid { grid-template-columns: 1fr !important; gap: 10px; }
       .form-group[style*="grid-column"] { grid-column: span 1 !important; }
-      .stats-row { grid-template-columns: repeat(2, 1fr); }
-      .keypad-grid { grid-template-columns: repeat(4, 1fr); }
+      .warning-threshold-group { padding-left: 0; margin-top: 8px; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+      .keypad-grid { grid-template-columns: repeat(4, 1fr); gap: 4px; }
+      .theme-toggle-btn { padding: 4px 8px; font-size: 9px; }
+      .corner-brand { font-size: 9px; }
       body:not(.mode-calc) .actions-grid { grid-template-columns: 1fr 1fr; }
       body:not(.mode-calc) .btn-next { grid-column: span 2 !important; }
     }
@@ -1433,14 +1485,16 @@
         <div class="form-group" style="grid-column: span 3;">
           <label class="toggle-checkbox-label">
             <input type="checkbox" id="warningModeToggle" checked>
-            แจ้งเตือนไม่ PERFECT แบบ Realtime (แสดงป้ายเตือนทันทีเมื่อสมการเบี่ยงจากเฉลยตรง)
+            <span>แจ้งเตือนไม่ PERFECT แบบ Realtime (แสดงป้ายเตือนทันทีเมื่อสมการเบี่ยงจากเฉลยตรง)</span>
           </label>
-          <div id="warningThresholdGroup" style="margin-top: 6px; padding-left: 22px; display: flex; align-items: center; gap: 8px;">
-            <label style="font-family: var(--font-display); font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-soft); white-space: nowrap;">
+          <div id="warningThresholdGroup" class="warning-threshold-group">
+            <label class="warning-threshold-label">
               เกณฑ์เตือนผลคลาดเคลื่อนวิกฤต (±):
             </label>
-            <input type="range" id="warningThresholdSlider" min="1" max="200" value="100" style="flex: 1;">
-            <input type="number" id="warningThresholdInput" class="input-control" min="1" max="200" value="100" style="width: 65px; flex: none;">
+            <div class="warning-threshold-controls">
+              <input type="range" id="warningThresholdSlider" min="1" max="200" value="100">
+              <input type="number" id="warningThresholdInput" class="input-control" min="1" max="200" value="100">
+            </div>
           </div>
         </div>
         <div class="form-group" style="grid-column: span 3;">
