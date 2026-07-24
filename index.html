@@ -371,6 +371,7 @@
 
     /* Plain Text Expression Display (Dynamically moved to Top in Calc mode, Bottom in Card mode) */
     .text-result-section {
+      position: relative;
       text-align: center;
       margin-top: 10px;
       margin-bottom: 14px;
@@ -416,6 +417,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      gap: 4px;
     }
 
     .formatted-eval-result {
@@ -424,6 +426,104 @@
       font-weight: 700;
       color: var(--orange-deep);
       min-height: 1.8rem;
+    }
+
+    /* CLOSEST SOLUTION HINT BANNER UNDERLINE STYLING */
+    .closest-sol-banner {
+      font-family: var(--font-mono);
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--orange-deep);
+      text-decoration: underline;
+      text-underline-offset: 4px;
+      margin-top: 6px;
+      padding: 4px 10px;
+      background: var(--paper-warm);
+      border: 1px dashed var(--orange);
+      display: none;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .closest-sol-banner.show {
+      display: inline-block;
+    }
+
+    /* NOT PERFECT WARNING BADGE AT TOP-RIGHT CORNER OF EXPRESSION DISPLAY BOX */
+    .not-perfect-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: var(--font-display);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #D97706;
+      background: #FEF3C7;
+      border: 1px solid #F59E0B;
+      padding: 2px 8px;
+      border-radius: 2px;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    body.dark-mode .not-perfect-badge {
+      color: #FBBF24;
+      background: rgba(217, 119, 6, 0.25);
+      border-color: #F59E0B;
+    }
+
+    /* SEVERE WARNING BADGE: deviation >= 100 guaranteed loss */
+    .not-perfect-badge.severe {
+      color: #DC2626;
+      background: #FEE2E2;
+      border: 1px solid #EF4444;
+      animation: severePulse 1s infinite alternate;
+    }
+
+    body.dark-mode .not-perfect-badge.severe {
+      color: #FCA5A5;
+      background: rgba(239, 68, 68, 0.25);
+      border-color: #EF4444;
+    }
+
+    @keyframes severePulse {
+      from { opacity: 0.8; }
+      to { opacity: 1; }
+    }
+
+    /* SMART HINT GHOST STYLES & ANIMATIONS */
+    .ghost-hint-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--orange-soft);
+      border: 1px dashed var(--orange);
+      color: var(--orange-deep);
+      padding: 0 8px;
+      font-family: var(--font-mono);
+      font-size: 1.25rem;
+      font-weight: 700;
+      height: 44px;
+      min-width: 36px;
+      border-radius: 2px;
+      animation: ghostPulse 1s infinite alternate;
+      pointer-events: none;
+    }
+
+    @keyframes ghostPulse {
+      from { opacity: 0.35; transform: scale(0.95); }
+      to { opacity: 0.85; transform: scale(1.05); }
+    }
+
+    .calc-hint-highlight {
+      border: 2px solid var(--orange) !important;
+      box-shadow: 0 0 10px rgba(249, 115, 22, 0.7) !important;
+      animation: hintBtnPulse 0.8s infinite alternate !important;
+    }
+
+    @keyframes hintBtnPulse {
+      from { transform: scale(1); box-shadow: 0 0 4px rgba(249, 115, 22, 0.4); }
+      to { transform: scale(1.06); box-shadow: 0 0 14px rgba(249, 115, 22, 0.9); }
     }
 
     /* Action Buttons Grid Base Layout */
@@ -982,14 +1082,26 @@
       color: #ffffff;
     }
 
+    /* KEYPAD NUMBER PAUSED STATE (WHEN OPERATOR IS REQUIRED NEXT): SOFTER FADE WITH COLOR RETAINED */
+    .calc-num-paused {
+      opacity: 0.65 !important;
+      background: var(--paper-white) !important;
+      border: 1px dashed var(--orange) !important;
+      color: var(--orange-deep) !important;
+      cursor: not-allowed !important;
+      pointer-events: none !important;
+      box-shadow: none !important;
+    }
+
+    /* KEYPAD NUMBER DISABLED STATE (WHEN NUMBER IS COMPLETELY USED UP FROM POOL) */
     .calc-num-disabled {
-      opacity: 0.3;
-      background: var(--paper-light);
-      border: 1px solid var(--ink-faint);
-      color: var(--ink-faint);
-      cursor: not-allowed;
-      pointer-events: none;
-      box-shadow: none;
+      opacity: 0.3 !important;
+      background: var(--paper-light) !important;
+      border: 1px solid var(--ink-faint) !important;
+      color: var(--ink-faint) !important;
+      cursor: not-allowed !important;
+      pointer-events: none !important;
+      box-shadow: none !important;
     }
 
     .calc-badge {
@@ -1127,17 +1239,6 @@
         <div class="boss-hp-bar-outer">
           <div class="boss-hp-bar-inner" id="bossHpBarInner" style="width: 100%;"></div>
         </div>
-
-        <!-- SPEED COMBO COUNTDOWN PROGRESS BAR -->
-        <div class="combo-bar-container" id="comboBarContainer">
-          <div class="combo-bar-header">
-            <span id="comboBadgeTitle">⚡ SPEED COMBO DRAIN BAR</span>
-            <span id="comboTimeText">--s</span>
-          </div>
-          <div class="combo-bar-outer">
-            <div class="combo-bar-inner" id="comboBarInner" style="width: 100%;"></div>
-          </div>
-        </div>
       </div>
 
       <!-- TARGET SECTION (MOVED TO TOP BELOW BOSS HP IN CALCULATOR MODE) -->
@@ -1150,12 +1251,18 @@
 
       <!-- PLAIN TEXT EXPRESSION DISPLAY (MOVED TO TOP RIGHT BELOW BOSS HP & TARGET IN CALC MODE) -->
       <div class="text-result-section">
+        <!-- NOT PERFECT BADGE FLOATING OUTSIDE/ABOVE THE BOX -->
+        <div id="notPerfectBadge" class="not-perfect-badge" style="position: absolute; top: -14px; right: 8px; display: none; z-index: 10;">
+          ⚠️ ไม่ PERFECT
+        </div>
         <div id="textResultDisplay">
           <div id="historyStepContainer"></div>
           <div class="active-expr-row">
             <span class="formatted-expression-text" id="formattedExprText">--</span>
             <span class="formatted-eval-result" id="formattedEvalBadge"></span>
           </div>
+          <!-- CLOSEST SOLUTION HINT BANNER UNDERLINE -->
+          <div class="closest-sol-banner" id="closestSolBanner"></div>
         </div>
       </div>
 
@@ -1323,6 +1430,25 @@
             โหมดคำนวณทีละขั้นด้วยปุ่ม = (Step-by-Step Subtotal Mode ในเครื่องคิดเลข)
           </label>
         </div>
+        <div class="form-group" style="grid-column: span 3;">
+          <label class="toggle-checkbox-label">
+            <input type="checkbox" id="warningModeToggle" checked>
+            แจ้งเตือนไม่ PERFECT แบบ Realtime (แสดงป้ายเตือนทันทีเมื่อสมการเบี่ยงจากเฉลยตรง)
+          </label>
+          <div id="warningThresholdGroup" style="margin-top: 6px; padding-left: 22px; display: flex; align-items: center; gap: 8px;">
+            <label style="font-family: var(--font-display); font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-soft); white-space: nowrap;">
+              เกณฑ์เตือนผลคลาดเคลื่อนวิกฤต (±):
+            </label>
+            <input type="range" id="warningThresholdSlider" min="1" max="200" value="100" style="flex: 1;">
+            <input type="number" id="warningThresholdInput" class="input-control" min="1" max="200" value="100" style="width: 65px; flex: none;">
+          </div>
+        </div>
+        <div class="form-group" style="grid-column: span 3;">
+          <label class="toggle-checkbox-label">
+            <input type="checkbox" id="hintModeToggle" checked>
+            โหมดคำใบ้อัจฉริยะ (Smart Hint Mode — แสดงตัวเลข/เครื่องหมายคำใบ้จางๆ เมื่อคิดนานเกิน 5 วินาที)
+          </label>
+        </div>
       </div>
     </section>
 
@@ -1350,14 +1476,15 @@
           <li>หากใช้เวลาเท่าเดิม ตัวคูณจะเท่าเดิม หากใช้เวลาช้ากว่าสถิติเดิม คอมโบจะหลุด</li>
         </ul>
 
-        <h3>⏳ 3. การหมดเวลาและการฟื้นฟูของ Boss</h3>
+        <h3>💡 3. ระบบคำใบ้อัจฉริยะ (Smart Hint Assist Mode)</h3>
         <ul>
-          <li>เมื่อเวลาต่อข้อหมดลง (Countdown 0s) <b>Boss จะฟื้นฟู HP +2.5% ของ Max HP</b> (เช่น Boss Lv.1 Max HP 1000 เพิ่ม +25 HP)</li>
+          <li>หากเปิด <b>"โหมดคำใบ้อัจฉริยะ"</b> ในการตั้งค่า เมื่อคิดนานเกิน <b>5 วินาที</b> ระบบจะช่วยแนะนำตัวเลขหรือเครื่องหมายถัดไปจางๆ ที่เลือกจาก **ตัวเลขที่ยังไม่ได้ใช้เท่านั้น**</li>
+          <li>หากสมการที่ผู้เล่นกดไม่สามารถทำให้เกิดผลลัพธ์ตรงเป้าหมาย 100% ได้ จะมีป้ายเตือน <b>⚠️ ไม่ PERFECT</b> แสดงที่มุมขวาบนของกรอบแสดงผลคำนวณ</li>
         </ul>
 
         <h3>🧮 4. โหมดคำนวณทีละขั้นด้วยปุ่ม = (Subtotal Mode)</h3>
         <ul>
-          <li>ในโหมดเครื่องคิดเลข หากเปิด <b>"โหมดคำนวณทีละขั้นด้วยปุ่ม ="</b> ผู้เล่นสามารถกด <code>=</code> เพื่อรวมผลลัพธ์ย่อยเป็นไพ่ตัวแปรชั่วคราว (<code>a</code>, <code>b</code>, <code>c</code>...) นำไปใช้คำนวณในขั้นตอนถัดไปได้ (เปิดใช้งานเป็นค่าเริ่มต้น)</li>
+          <li>ในโหมดเครื่องคิดเลข หากเปิด <b>"โหมดคำนวณทีละขั้นด้วยปุ่ม ="</b> ผู้เล่นสามารถกด <code>=</code> เพื่อรวมผลลัพธ์ย่อยเป็นไพ่ตัวแปรชั่วคราว (<code>a</code>, <code>b</code>, <code>c</code>...) นำไปใช้คำนวณในขั้นตอนถัดไปได้</li>
         </ul>
       </div>
     </div>
@@ -1647,6 +1774,7 @@
       }
 
       static cleanExpression(expr) {
+        if (!expr) return '';
         if (expr.startsWith('(') && expr.endsWith(')')) {
           let depth = 0;
           let redundant = true;
@@ -1679,6 +1807,13 @@
         this.subtotalSteps = [];
         this.variableMap = {};
 
+        // Smart Hint Engine Timer & Active State
+        this.hintTimer = null;
+        this.activeHintData = null;
+        this.closestSolutionHint = null;
+        this.isPerfectPath = true;
+        this.bestAchievableDiff = null;
+
         // Puzzle Timer State
         this.timerInterval = null;
         this.remainingTime = 0;
@@ -1701,6 +1836,7 @@
         this.comboInterval = null;
 
         this.isSolutionRevealed = false;
+        this.isAnswerChecked = false;
         this.mode = localStorage.getItem('speedmath_mode') || 'calc';
 
         // Elements
@@ -1716,6 +1852,10 @@
         this.uniqueNumbersToggle = document.getElementById('uniqueNumbersToggle');
         this.hideIntermediateToggle = document.getElementById('hideIntermediateToggle');
         this.subtotalModeToggle = document.getElementById('subtotalModeToggle');
+        this.hintModeToggle = document.getElementById('hintModeToggle');
+        this.warningModeToggle = document.getElementById('warningModeToggle');
+        this.warningThresholdSlider = document.getElementById('warningThresholdSlider');
+        this.warningThresholdInput = document.getElementById('warningThresholdInput');
         this.timerValEl = document.getElementById('timerVal');
 
         this.targetNumEl = document.getElementById('targetNum');
@@ -1725,6 +1865,7 @@
         
         this.formattedExprText = document.getElementById('formattedExprText');
         this.formattedEvalBadge = document.getElementById('formattedEvalBadge');
+        this.closestSolBanner = document.getElementById('closestSolBanner');
 
         this.scoreValEl = document.getElementById('scoreVal');
         this.streakValEl = document.getElementById('streakVal');
@@ -1799,6 +1940,36 @@
           });
         }
 
+        if (this.hintModeToggle) {
+          this.hintModeToggle.addEventListener('change', () => {
+            AudioFX.playClick();
+            this.resetHintTimer();
+          });
+        }
+
+        if (this.warningModeToggle) {
+          this.warningModeToggle.addEventListener('change', () => {
+            AudioFX.playClick();
+            this.resetHintTimer();
+          });
+        }
+
+        if (this.warningThresholdSlider && this.warningThresholdInput) {
+          this.warningThresholdSlider.addEventListener('input', () => {
+            this.warningThresholdInput.value = this.warningThresholdSlider.value;
+            this.resetHintTimer();
+          });
+
+          this.warningThresholdInput.addEventListener('input', () => {
+            let val = parseInt(this.warningThresholdInput.value, 10);
+            if (!isNaN(val)) {
+              val = Math.max(1, Math.min(200, val));
+              this.warningThresholdSlider.value = val;
+              this.resetHintTimer();
+            }
+          });
+        }
+
         document.querySelectorAll('.op-btn').forEach(b => {
           b.addEventListener('click', () => {
             AudioFX.playClick();
@@ -1822,6 +1993,448 @@
         });
 
         window.addEventListener('keydown', (e) => this.handleKeyDown(e));
+      }
+
+      /**
+       * Reset timer and compute real-time warning + delayed hint
+       */
+      resetHintTimer() {
+        if (this.hintTimer) {
+          clearTimeout(this.hintTimer);
+          this.hintTimer = null;
+        }
+
+        // STOP & DISABLE IF SOLUTION REVEALED OR ANSWER CHECKED!
+        if (this.isSolutionRevealed || this.isAnswerChecked) {
+          this.activeHintData = null;
+          this.isPerfectPath = true;
+          this.bestAchievableDiff = null;
+          this.render();
+          return;
+        }
+
+        this.activeHintData = null;
+
+        // REAL-TIME: Immediately compute warning badge (no delay!)
+        const warningEnabled = this.warningModeToggle && this.warningModeToggle.checked;
+        if (warningEnabled) {
+          this.computePathWarning();
+        } else {
+          this.isPerfectPath = true;
+          this.bestAchievableDiff = null;
+        }
+
+        this.render();
+
+        // DELAYED: Set 5-second timer for ghost hint tokens
+        const hintEnabled = this.hintModeToggle && this.hintModeToggle.checked;
+        if (hintEnabled) {
+          this.hintTimer = setTimeout(() => {
+            this.computeSmartHint();
+          }, 5000);
+        }
+      }
+
+      /**
+       * REAL-TIME PATH WARNING: Immediately checks if user is on perfect path
+       * and computes best achievable deviation. Updates badge without waiting 5s.
+       */
+      computePathWarning() {
+        if (this.isSolutionRevealed || this.isAnswerChecked) return;
+        if (!this.solutionsSet || this.solutionsSet.size === 0) return;
+
+        const userTokens = this.expressionTokens;
+        const hasSubtotalVars = this.subtotalSteps.length > 0;
+
+        // If subtotal variables exist OR tokens are empty with used numbers, use mini-solver path
+        if (hasSubtotalVars) {
+          // In subtotal mode, original solutions don't apply → use mini-solver
+          this.isPerfectPath = false;
+          this._computeBestAchievableDiff();
+          return;
+        }
+
+        if (userTokens.length === 0) {
+          this.isPerfectPath = true;
+          this.bestAchievableDiff = 0;
+          return;
+        }
+
+        // Check if user tokens form an exact prefix match for any 100% solution
+        const solutions = Array.from(this.solutionsSet);
+        const parseSolution = (exprStr) => {
+          const cleaned = MathSolver.cleanExpression(exprStr);
+          const regex = /(\d+|[+\-×÷^√()])/g;
+          const matches = cleaned.match(regex) || [];
+          return matches.map(m => {
+            if (/^\d+$/.test(m)) return { type: 'num', val: parseInt(m, 10) };
+            return { type: 'op', val: m };
+          });
+        };
+
+        const parsedSolutions = solutions.map(s => parseSolution(s));
+        const matchingSols = parsedSolutions.filter(sol => {
+          if (sol.length < userTokens.length) return false;
+          for (let i = 0; i < userTokens.length; i++) {
+            const u = userTokens[i];
+            const s = sol[i];
+            let uVal = u.val;
+            if (u.type === 'var' && u.realVal !== undefined) uVal = u.realVal;
+            if (u.type === 'num' || u.type === 'var') {
+              if (s.type !== 'num' || s.val !== uVal) return false;
+            } else if (u.type === 'op') {
+              if (s.type !== 'op' || s.val !== u.val) return false;
+            }
+          }
+          return true;
+        });
+
+        if (matchingSols.length > 0) {
+          this.isPerfectPath = true;
+          this.bestAchievableDiff = 0;
+        } else {
+          this.isPerfectPath = false;
+          this._computeBestAchievableDiff();
+        }
+      }
+
+      /**
+       * Helper: Compute best achievable diff from current state using mini-solver
+       */
+      _computeBestAchievableDiff() {
+        const unusedNums = this.givenNumbers.filter(n => !n.used);
+        const unusedVars = this.subtotalSteps.filter(s => !s.used);
+        const remainingVals = [
+          ...unusedNums.map(n => n.val),
+          ...unusedVars.map(v => v.val)
+        ];
+
+        if (remainingVals.length === 0) {
+          const currentVal = this.evaluateExpression();
+          this.bestAchievableDiff = (currentVal !== null && Number.isFinite(currentVal))
+            ? Math.abs(currentVal - this.targetNumber)
+            : Infinity;
+          return;
+        }
+
+        const currentVal = this.evaluateExpression();
+
+        if (currentVal !== null && Number.isFinite(currentVal)) {
+          // Expression has a value → combine with remaining items
+          const stepCount = { val: 0 };
+          const best = this.findBestAchievableResult(currentVal, remainingVals, this.targetNumber, stepCount);
+          this.bestAchievableDiff = Math.abs(best - this.targetNumber);
+        } else if (this.expressionTokens.length === 0) {
+          // No expression yet → try each item as start and solve with rest
+          let bestDiff = Infinity;
+          for (let i = 0; i < remainingVals.length; i++) {
+            const startVal = remainingVals[i];
+            const rest = [...remainingVals.slice(0, i), ...remainingVals.slice(i + 1)];
+            const stepCount = { val: 0 };
+            const best = this.findBestAchievableResult(startVal, rest, this.targetNumber, stepCount);
+            const diff = Math.abs(best - this.targetNumber);
+            if (diff < bestDiff) bestDiff = diff;
+          }
+          this.bestAchievableDiff = bestDiff;
+        } else {
+          this.bestAchievableDiff = Infinity;
+        }
+      }
+
+      /**
+       * SMART HINT RECOMMENDATION ENGINE
+       * Always recommends the NEXT best token strictly selected from UNUSED numbers remaining in pool.
+       * Displays '⚠️ ไม่ PERFECT' badge in top-right corner if prefix strays from 100% solution.
+       */
+      /**
+       * DEEP LOOK-AHEAD MINI-SOLVER: finds best achievable result
+       * by combining currentValue with remainingNums using all operator orderings.
+       */
+      findBestAchievableResult(currentValue, remainingNums, target, stepCount) {
+        if (remainingNums.length === 0 || stepCount.val > 50000) {
+          return currentValue;
+        }
+
+        let bestVal = currentValue;
+        let bestDiff = Math.abs(currentValue - target);
+
+        for (let i = 0; i < remainingNums.length; i++) {
+          const num = remainingNums[i];
+          const rest = [...remainingNums.slice(0, i), ...remainingNums.slice(i + 1)];
+          stepCount.val++;
+
+          const results = [
+            currentValue + num,
+            currentValue - num,
+            num - currentValue,
+            currentValue * num,
+          ];
+
+          if (Math.abs(num) > 1e-7) results.push(currentValue / num);
+          if (Math.abs(currentValue) > 1e-7) results.push(num / currentValue);
+
+          // Power with safety bounds
+          if (num >= 0 && num <= 10 && Math.abs(currentValue) > 0 && Math.abs(currentValue) <= 200) {
+            const pv = Math.pow(currentValue, num);
+            if (Number.isFinite(pv) && Math.abs(pv) <= 1e9) results.push(pv);
+          }
+          if (currentValue >= 0 && currentValue <= 10 && Math.abs(num) > 0 && Math.abs(num) <= 200) {
+            const pv = Math.pow(num, currentValue);
+            if (Number.isFinite(pv) && Math.abs(pv) <= 1e9) results.push(pv);
+          }
+
+          for (const result of results) {
+            if (result === null || result === undefined || !Number.isFinite(result) || Math.abs(result) > 1e9) continue;
+            const bestFromHere = this.findBestAchievableResult(result, rest, target, stepCount);
+            const diff = Math.abs(bestFromHere - target);
+            if (diff < bestDiff) {
+              bestDiff = diff;
+              bestVal = bestFromHere;
+            }
+          }
+        }
+
+        return bestVal;
+      }
+
+      computeSmartHint() {
+        if (this.isSolutionRevealed || this.isAnswerChecked) return;
+        if (!this.solutionsSet || this.solutionsSet.size === 0) return;
+
+        const userTokens = this.expressionTokens;
+        const solutions = Array.from(this.solutionsSet);
+
+        // Helper to parse solution string into structured tokens
+        const parseSolution = (exprStr) => {
+          const cleaned = MathSolver.cleanExpression(exprStr);
+          const regex = /(\d+|[+\-×÷^√()])/g;
+          const matches = cleaned.match(regex) || [];
+          return matches.map(m => {
+            if (/^\d+$/.test(m)) return { type: 'num', val: parseInt(m, 10) };
+            return { type: 'op', val: m };
+          });
+        };
+
+        const parsedSolutions = solutions.map(s => parseSolution(s));
+
+        // If subtotal variables exist, original solutions don't apply → skip perfect-path check
+        const hasSubtotalVars = this.subtotalSteps.length > 0;
+
+        // Case A: User has not entered any tokens yet
+        if (userTokens.length === 0) {
+          if (!hasSubtotalVars) {
+            // No subtotals → use original solutions
+            this.isPerfectPath = true;
+            this.bestAchievableDiff = 0;
+            const bestSol = parsedSolutions[0];
+            if (bestSol && bestSol.length > 0) {
+              const ghost1 = bestSol[0];
+              const ghost2 = bestSol.length > 1 ? bestSol[1] : null;
+              this.activeHintData = {
+                type: 'suggest',
+                ghostTokens: [ghost1, ghost2].filter(Boolean)
+              };
+            }
+            this.render();
+            return;
+          }
+          // Has subtotals → fall through to non-perfect path with mini-solver
+        }
+
+        // Case B: Check if user tokens form an exact prefix match (skip if subtotal mode)
+        let matchingSols = [];
+        if (!hasSubtotalVars && userTokens.length > 0) {
+          matchingSols = parsedSolutions.filter(sol => {
+            if (sol.length < userTokens.length) return false;
+            for (let i = 0; i < userTokens.length; i++) {
+              const u = userTokens[i];
+              const s = sol[i];
+              let uVal = u.val;
+              if (u.type === 'var' && u.realVal !== undefined) uVal = u.realVal;
+
+              if (u.type === 'num' || u.type === 'var') {
+                if (s.type !== 'num' || s.val !== uVal) return false;
+              } else if (u.type === 'op') {
+                if (s.type !== 'op' || s.val !== u.val) return false;
+              }
+            }
+            return true;
+          });
+        }
+
+        if (matchingSols.length > 0) {
+          // Exact 100% match path!
+          this.isPerfectPath = true;
+          this.bestAchievableDiff = 0;
+          const sol = matchingSols[0];
+          const nextIdx = userTokens.length;
+          const ghost1 = sol[nextIdx] || null;
+          const ghost2 = sol[nextIdx + 1] || null;
+          this.activeHintData = {
+            type: 'suggest',
+            ghostTokens: [ghost1, ghost2].filter(Boolean)
+          };
+        } else {
+          // User prefix strays from 100% solution -> Show warning badge!
+          this.isPerfectPath = false;
+
+          // STRICT FILTER: Remaining UNUSED numbers and variables ONLY!
+          const unusedNums = this.givenNumbers.filter(n => !n.used);
+          const unusedVars = this.subtotalSteps.filter(s => !s.used);
+
+          // Build remaining items list (values only, for mini-solver)
+          const remainingItems = [];
+          unusedNums.forEach(n => remainingItems.push({ val: n.val, type: 'num', id: n.id }));
+          unusedVars.forEach(v => remainingItems.push({ val: v.val, type: 'var', varName: v.varName }));
+
+          // If NO numbers/vars remain, do NOT suggest operators — nothing left to operate on!
+          if (remainingItems.length === 0) {
+            // Just compute best achievable diff from current expression
+            const currentVal = this.evaluateExpression();
+            this.bestAchievableDiff = (currentVal !== null && Number.isFinite(currentVal))
+              ? Math.abs(currentVal - this.targetNumber)
+              : Infinity;
+            this.activeHintData = null;
+            this.render();
+            return;
+          }
+
+          const lastToken = userTokens[userTokens.length - 1];
+          const isLastNumOrVar = lastToken && (lastToken.type === 'num' || lastToken.type === 'var' || lastToken.val === ')');
+          const ops = ['+', '-', '×', '÷', '^'];
+
+          let bestCandidateTokens = null;
+          let bestAchievableDiff = Infinity;
+
+          if (isLastNumOrVar) {
+            // Must recommend OPERATOR next — use 2-step look-ahead (op + number)
+            // For each (op, num) pair, evaluate and then run mini-solver on remaining
+            for (const opVal of ops) {
+              for (let i = 0; i < remainingItems.length; i++) {
+                const item = remainingItems[i];
+                const numToken = item.type === 'var'
+                  ? { type: 'var', val: item.varName, realVal: item.val }
+                  : { type: 'num', val: item.val };
+
+                const testTokens = [...userTokens, { type: 'op', val: opVal }, numToken];
+                const evalVal = this.evaluateTokensPartial(testTokens);
+
+                if (evalVal !== null && Number.isFinite(evalVal)) {
+                  // Run mini-solver on remaining numbers (minus this one)
+                  const remainingAfter = remainingItems.filter((_, idx) => idx !== i).map(r => r.val);
+                  const stepCount = { val: 0 };
+                  const bestFinal = this.findBestAchievableResult(evalVal, remainingAfter, this.targetNumber, stepCount);
+                  const diff = Math.abs(bestFinal - this.targetNumber);
+
+                  if (diff < bestAchievableDiff) {
+                    bestAchievableDiff = diff;
+                    bestCandidateTokens = [{ type: 'op', val: opVal }, numToken];
+                  }
+                }
+              }
+            }
+          } else {
+            // Must recommend NUMBER/VAR next — try each remaining number
+            // For each number, evaluate it and run mini-solver on the rest
+            for (let i = 0; i < remainingItems.length; i++) {
+              const item = remainingItems[i];
+              const numToken = item.type === 'var'
+                ? { type: 'var', val: item.varName, realVal: item.val }
+                : { type: 'num', val: item.val };
+
+              const testTokens = [...userTokens, numToken];
+              const evalVal = this.evaluateTokensPartial(testTokens);
+
+              if (evalVal !== null && Number.isFinite(evalVal)) {
+                const remainingAfter = remainingItems.filter((_, idx) => idx !== i).map(r => r.val);
+                const stepCount = { val: 0 };
+                const bestFinal = this.findBestAchievableResult(evalVal, remainingAfter, this.targetNumber, stepCount);
+                const diff = Math.abs(bestFinal - this.targetNumber);
+
+                if (diff < bestAchievableDiff) {
+                  bestAchievableDiff = diff;
+                  bestCandidateTokens = [numToken];
+                }
+              }
+            }
+          }
+
+          this.bestAchievableDiff = bestAchievableDiff;
+
+          if (bestCandidateTokens) {
+            this.activeHintData = {
+              type: 'suggest',
+              ghostTokens: bestCandidateTokens
+            };
+          } else {
+            this.activeHintData = null;
+          }
+        }
+
+        this.render();
+      }
+
+      evaluateTokensPartial(tokens) {
+        try {
+          let exprStr = tokens.map(t => {
+            if (t.type === 'var') return t.realVal !== undefined ? t.realVal : 0;
+            if (t.val === '×') return '*';
+            if (t.val === '÷') return '/';
+            return t.val;
+          }).join('');
+
+          exprStr = exprStr.replace(/√\s*\(([^)]+)\)/g, "Math.sqrt($1)");
+          exprStr = exprStr.replace(/√\s*(\d+(?:\.\d+)?)/g, "Math.sqrt($1)");
+          exprStr = exprStr.replace(/\^/g, "**");
+
+          // Clean up trailing operator for evaluation test
+          exprStr = exprStr.replace(/[+\-*/^]+$/, '');
+          if (!exprStr || !/^[0-9+\-*/().\s*Mathsqrt]+$/.test(exprStr)) return null;
+
+          const fn = new Function(`"use strict"; return (${exprStr})`);
+          const res = fn();
+          return typeof res === 'number' && !isNaN(res) ? res : null;
+        } catch (e) {
+          return null;
+        }
+      }
+
+      findClosestSolution() {
+        if (!this.solutionsSet || this.solutionsSet.size === 0) return null;
+
+        const solutions = Array.from(this.solutionsSet);
+        const userTokens = this.expressionTokens;
+
+        const parseSolTokens = (exprStr) => {
+          const cleaned = MathSolver.cleanExpression(exprStr);
+          const regex = /(\d+|[+\-×÷^√()])/g;
+          return cleaned.match(regex) || [];
+        };
+
+        let bestSol = solutions[0];
+        let maxMatchLen = -1;
+
+        for (const solStr of solutions) {
+          const solTokens = parseSolTokens(solStr);
+          let matchLen = 0;
+          for (let i = 0; i < Math.min(userTokens.length, solTokens.length); i++) {
+            let uVal = userTokens[i].val.toString();
+            if (userTokens[i].type === 'var' && userTokens[i].realVal !== undefined) {
+              uVal = userTokens[i].realVal.toString();
+            }
+            if (uVal === solTokens[i]) {
+              matchLen++;
+            } else {
+              break;
+            }
+          }
+          if (matchLen > maxMatchLen) {
+            maxMatchLen = matchLen;
+            bestSol = solStr;
+          }
+        }
+
+        return MathSolver.cleanExpression(bestSol);
       }
 
       initPointerDrag() {
@@ -1902,7 +2515,7 @@
                 const [movedToken] = this.expressionTokens.splice(data.fromIndex, 1);
                 const newIdx = targetIndex > data.fromIndex ? targetIndex - 1 : targetIndex;
                 this.expressionTokens.splice(newIdx, 0, movedToken);
-                this.render();
+                this.resetHintTimer();
               }
             }
           } else {
@@ -2007,27 +2620,9 @@
           this.comboInterval = null;
         }
 
-        const comboBarContainer = document.getElementById('comboBarContainer');
-        const comboBarInner = document.getElementById('comboBarInner');
-        const comboTimeText = document.getElementById('comboTimeText');
-        const comboBadgeTitle = document.getElementById('comboBadgeTitle');
-
         if (this.comboCount > 0 && this.prevSolveTime !== null && this.prevSolveTime > 0) {
           this.comboTimeWindow = this.prevSolveTime;
           this.comboRemainingTime = this.prevSolveTime;
-
-          if (comboBarContainer) comboBarContainer.style.display = 'block';
-
-          const mult = 1.0 + (this.comboCount * 0.1);
-          if (comboBadgeTitle) comboBadgeTitle.textContent = `⚡ SPEED COMBO x${mult.toFixed(1)} (ทำเวลาให้เร็วกว่า ${this.comboTimeWindow.toFixed(1)}s)`;
-
-          const updateComboUI = () => {
-            const pct = Math.max(0, Math.min(100, (this.comboRemainingTime / this.comboTimeWindow) * 100));
-            if (comboBarInner) comboBarInner.style.width = `${pct}%`;
-            if (comboTimeText) comboTimeText.textContent = `${this.comboRemainingTime.toFixed(1)}s`;
-          };
-
-          updateComboUI();
 
           const startTime = Date.now();
           const duration = this.prevSolveTime * 1000;
@@ -2036,20 +2631,15 @@
             const elapsed = Date.now() - startTime;
             this.comboRemainingTime = Math.max(0, (duration - elapsed) / 1000);
 
-            updateComboUI();
-
             if (this.comboRemainingTime <= 0) {
               clearInterval(this.comboInterval);
               this.comboInterval = null;
               this.comboCount = 0;
               this.prevSolveTime = null;
-              if (comboBarContainer) comboBarContainer.style.display = 'none';
               this.updateBossUI(false);
               this.showAlert('หมดเวลาต่อคอมโบ! สถิติเวลาคอมโบหลุดแล้ว (เริ่มสเตรคคอมโบใหม่)', 'info');
             }
           }, 100);
-        } else {
-          if (comboBarContainer) comboBarContainer.style.display = 'none';
         }
       }
 
@@ -2117,8 +2707,12 @@
 
         this.puzzleStartTime = Date.now();
         this.isSolutionRevealed = false;
+        this.isAnswerChecked = false;
+        this.isPerfectPath = true;
+        this.bestAchievableDiff = null;
         this.subtotalSteps = [];
         this.variableMap = {};
+        this.closestSolutionHint = null;
 
         const checkBtn = document.getElementById('checkBtn');
         if (checkBtn) {
@@ -2131,9 +2725,9 @@
         this.clearExpression();
         this.hideAlert();
         this.solutionsCard.classList.remove('show');
-        this.render();
         this.startTimer();
         this.startComboTimer();
+        this.resetHintTimer();
       }
 
       /**
@@ -2180,12 +2774,18 @@
           [ { type: 'op', val: '(' }, { type: 'op', val: ')' }, { type: 'op', val: '√' }, { type: 'action', val: '=' } ]
         ];
 
+        // Keypad Lock Rule: If last token is NUMBER, VARIABLE, or ')', NUMBER/VAR buttons are PAUSED (Opacity 0.65 with color retained)
+        const lastToken = this.expressionTokens.length > 0 ? this.expressionTokens[this.expressionTokens.length - 1] : null;
+        const isLastNumOrVar = lastToken && (lastToken.type === 'num' || lastToken.type === 'var' || lastToken.val === ')');
+
+        // Active Smart Hint Highlights
+        const ghostVals = (this.activeHintData && this.activeHintData.ghostTokens) ? this.activeHintData.ghostTokens.map(g => g.val) : [];
+
         keypadLayout.forEach(row => {
           row.forEach(item => {
             const btn = document.createElement('button');
 
             if (item.type === 'numSlot') {
-              // Check if a subtotal variable can occupy this slot, or if slot has a number
               const slot = numSlots[item.slotIdx];
 
               if (slot && slot.active) {
@@ -2193,43 +2793,56 @@
                 const count = slot.count;
 
                 if (count > 0) {
-                  btn.className = 'calc-btn calc-num-btn calc-num-available';
-                  btn.innerHTML = `${numVal}`;
-                  if (count > 1) {
-                    btn.innerHTML += `<sup class="calc-badge">${count}</sup>`;
+                  if (isLastNumOrVar) {
+                    // Temporarily paused because operator is required next (Opacity 0.65 with color retained!)
+                    btn.className = `calc-btn calc-num-btn calc-num-paused`;
+                    btn.innerHTML = `${numVal}`;
+                    if (count > 1) btn.innerHTML += `<sup class="calc-badge">${count}</sup>`;
+                    btn.title = "ต้องกดเครื่องหมายคำนวณก่อนกดตัวเลขถัดไป";
+                  } else {
+                    // Available to press
+                    btn.className = `calc-btn calc-num-btn calc-num-available ${ghostVals.includes(numVal) ? 'calc-hint-highlight' : ''}`;
+                    btn.innerHTML = `${numVal}`;
+                    if (count > 1) btn.innerHTML += `<sup class="calc-badge">${count}</sup>`;
+                    btn.addEventListener('click', () => {
+                      AudioFX.playClick();
+                      const unusedItem = this.givenNumbers.find(n => !n.used && n.val === numVal);
+                      if (unusedItem) {
+                        unusedItem.used = true;
+                        this.pushToken({ type: 'num', val: numVal, id: unusedItem.id });
+                      }
+                    });
                   }
-                  btn.addEventListener('click', () => {
-                    AudioFX.playClick();
-                    const unusedItem = this.givenNumbers.find(n => !n.used && n.val === numVal);
-                    if (unusedItem) {
-                      unusedItem.used = true;
-                      this.pushToken({ type: 'num', val: numVal, id: unusedItem.id });
-                    }
-                  });
                 } else {
+                  // Completely used up from pool
                   btn.className = 'calc-btn calc-num-btn calc-num-disabled';
                   btn.innerHTML = `${numVal}`;
                 }
               } else {
-                // If number slot is empty, check if we have unused subtotal variable cards (a, b...)
                 const varIdx = item.slotIdx - sortedUniqueVals.length;
                 if (varIdx >= 0 && varIdx < activeVars.length) {
                   const varItem = activeVars[varIdx];
                   const hideIntermediate = this.hideIntermediateToggle && this.hideIntermediateToggle.checked;
-                  btn.className = 'calc-btn calc-var-btn';
-                  btn.innerHTML = hideIntermediate ? `${varItem.varName}` : `${varItem.varName} <sup class="calc-badge">${varItem.val}</sup>`;
-                  btn.addEventListener('click', () => {
-                    AudioFX.playClick();
-                    varItem.used = true;
-                    this.pushToken({ type: 'var', val: varItem.varName, realVal: varItem.val, varId: varItem.varName });
-                  });
+                  if (isLastNumOrVar) {
+                    btn.className = 'calc-btn calc-var-btn calc-num-paused';
+                    btn.innerHTML = hideIntermediate ? `${varItem.varName}` : `${varItem.varName} <sup class="calc-badge">${varItem.val}</sup>`;
+                    btn.title = "ต้องกดเครื่องหมายคำนวณก่อนกดตัวแปรถัดไป";
+                  } else {
+                    btn.className = `calc-btn calc-var-btn ${ghostVals.includes(varItem.val) ? 'calc-hint-highlight' : ''}`;
+                    btn.innerHTML = hideIntermediate ? `${varItem.varName}` : `${varItem.varName} <sup class="calc-badge">${varItem.val}</sup>`;
+                    btn.addEventListener('click', () => {
+                      AudioFX.playClick();
+                      varItem.used = true;
+                      this.pushToken({ type: 'var', val: varItem.varName, realVal: varItem.val, varId: varItem.varName });
+                    });
+                  }
                 } else {
                   btn.className = 'calc-btn calc-num-btn calc-num-disabled';
                   btn.innerHTML = `-`;
                 }
               }
             } else if (item.type === 'op') {
-              btn.className = 'calc-btn calc-op-btn';
+              btn.className = `calc-btn calc-op-btn ${ghostVals.includes(item.val) ? 'calc-hint-highlight' : ''}`;
               btn.textContent = item.val;
               btn.addEventListener('click', () => {
                 AudioFX.playClick();
@@ -2298,7 +2911,7 @@
 
         this.variableMap[varName] = formattedVal;
         this.expressionTokens = [];
-        this.render();
+        this.resetHintTimer();
       }
 
       updateBossUI(isHit = false) {
@@ -2337,10 +2950,44 @@
         if (this.targetNumEl) this.targetNumEl.textContent = this.targetNumber;
         if (this.cardTargetNumEl) this.cardTargetNumEl.textContent = this.targetNumber;
 
-        // Render Workspace Tiles
+        const ghostTokens = (this.activeHintData && this.activeHintData.ghostTokens) ? this.activeHintData.ghostTokens : [];
+
+        // Render Not Perfect Badge (Two Levels) — controlled by warningModeToggle
+        const notPerfectBadgeEl = document.getElementById('notPerfectBadge');
+        const warningEnabled = this.warningModeToggle && this.warningModeToggle.checked;
+        const severeLimit = parseInt(this.warningThresholdInput ? this.warningThresholdInput.value : 100, 10) || 100;
+        if (notPerfectBadgeEl) {
+          const showBadge = warningEnabled && this.isPerfectPath === false && !this.isSolutionRevealed && !this.isAnswerChecked
+            && (this.expressionTokens.length > 0 || this.subtotalSteps.length > 0);
+          if (showBadge) {
+            notPerfectBadgeEl.style.display = 'inline-flex';
+            // Level 2: Severe warning when best achievable deviation >= severeLimit (user configurable for training)
+            if (this.bestAchievableDiff !== null && this.bestAchievableDiff >= severeLimit) {
+              notPerfectBadgeEl.className = 'not-perfect-badge severe';
+              notPerfectBadgeEl.textContent = `❌ ห่างเกิน ${severeLimit} — ตอบไปก็แพ้`;
+            } else {
+              // Level 1: Not perfect but still salvageable
+              notPerfectBadgeEl.className = 'not-perfect-badge';
+              notPerfectBadgeEl.textContent = '⚠️ ไม่ PERFECT';
+            }
+          } else {
+            notPerfectBadgeEl.style.display = 'none';
+          }
+        }
+
+        // Render Workspace Tiles (All user tokens remain untouched without strikethroughs)
         this.workspaceDropzone.innerHTML = '';
         if (this.expressionTokens.length === 0) {
-          this.workspaceDropzone.innerHTML = `<span class="expr-placeholder" style="font-family:var(--font-display); font-size:0.8rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-soft);">แตะ/ลากวางตัวเลขและเครื่องหมายที่นี่ (ลากออกเพื่อลบ)...</span>`;
+          if (ghostTokens.length > 0) {
+            ghostTokens.forEach(gt => {
+              const chip = document.createElement('div');
+              chip.className = 'ghost-hint-chip';
+              chip.textContent = gt.val;
+              this.workspaceDropzone.appendChild(chip);
+            });
+          } else {
+            this.workspaceDropzone.innerHTML = `<span class="expr-placeholder" style="font-family:var(--font-display); font-size:0.8rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-soft);">แตะ/ลากวางตัวเลขและเครื่องหมายที่นี่ (ลากออกเพื่อลบ)...</span>`;
+          }
         } else {
           this.expressionTokens.forEach((token, idx) => {
             const tile = document.createElement('div');
@@ -2369,6 +3016,16 @@
 
             this.workspaceDropzone.appendChild(tile);
           });
+
+          // Append Ghost Tokens in Workspace
+          if (ghostTokens.length > 0) {
+            ghostTokens.forEach(gt => {
+              const chip = document.createElement('div');
+              chip.className = 'ghost-hint-chip';
+              chip.textContent = gt.val;
+              this.workspaceDropzone.appendChild(chip);
+            });
+          }
         }
 
         // Render Unused Numbers
@@ -2410,26 +3067,42 @@
           });
         }
 
-        if (this.expressionTokens.length === 0) {
+        // Render Closest Solution Hint Underline Banner
+        if (this.closestSolBanner) {
+          if (this.closestSolutionHint) {
+            this.closestSolBanner.innerHTML = `<u>เฉลยที่ใกล้เคียงที่สุด: ${this.closestSolutionHint} = ${this.targetNumber}</u>`;
+            this.closestSolBanner.classList.add('show');
+          } else {
+            this.closestSolBanner.innerHTML = '';
+            this.closestSolBanner.classList.remove('show');
+          }
+        }
+
+        // Plain Text Expression Display Rendering (with comma separation for consecutive numbers/vars & ghost hints)
+        if (this.expressionTokens.length === 0 && ghostTokens.length === 0) {
           this.formattedExprText.textContent = '--';
           this.formattedEvalBadge.textContent = '';
         } else {
-          let textStr = '';
-          for (let i = 0; i < this.expressionTokens.length; i++) {
-            const curr = this.expressionTokens[i];
+          this.formattedExprText.innerHTML = '';
+          this.expressionTokens.forEach((token, i) => {
             const prev = i > 0 ? this.expressionTokens[i - 1] : null;
+            const isConsecutiveNum = prev && (prev.type === 'num' || prev.type === 'var') && (token.type === 'num' || token.type === 'var');
+            const span = document.createElement('span');
+            span.textContent = (i > 0 ? (isConsecutiveNum ? ', ' : ' ') : '') + token.val;
+            this.formattedExprText.appendChild(span);
+          });
 
-            if (i > 0) {
-              if (prev.type === 'num' && curr.type === 'num') {
-                textStr += ', ';
-              } else {
-                textStr += ' ';
-              }
-            }
-            textStr += curr.val;
+          if (ghostTokens.length > 0) {
+            ghostTokens.forEach((gt, gi) => {
+              const ghostSpan = document.createElement('span');
+              ghostSpan.className = 'ghost-hint-chip';
+              ghostSpan.style.height = 'auto';
+              ghostSpan.style.fontSize = '1.3rem';
+              ghostSpan.style.marginLeft = (this.expressionTokens.length === 0 && gi === 0) ? '0' : '4px';
+              ghostSpan.textContent = gt.val;
+              this.formattedExprText.appendChild(ghostSpan);
+            });
           }
-
-          this.formattedExprText.textContent = textStr;
 
           if (hideIntermediate) {
             this.formattedEvalBadge.textContent = '= ?';
@@ -2447,8 +3120,9 @@
 
       pushToken(token) {
         this.expressionTokens.push(token);
+        this.closestSolutionHint = null;
         this.hideAlert();
-        this.render();
+        this.resetHintTimer();
       }
 
       insertTokenAtIndex(token, idx) {
@@ -2457,8 +3131,9 @@
         } else {
           this.expressionTokens.push(token);
         }
+        this.closestSolutionHint = null;
         this.hideAlert();
-        this.render();
+        this.resetHintTimer();
       }
 
       popToken() {
@@ -2471,8 +3146,9 @@
           const vItem = this.subtotalSteps.find(s => s.varName === popped.varId);
           if (vItem) vItem.used = false;
         }
+        this.closestSolutionHint = null;
         this.hideAlert();
-        this.render();
+        this.resetHintTimer();
       }
 
       removeTokenAtIndex(idx) {
@@ -2485,8 +3161,9 @@
             const vItem = this.subtotalSteps.find(s => s.varName === removed.varId);
             if (vItem) vItem.used = false;
           }
+          this.closestSolutionHint = null;
           this.hideAlert();
-          this.render();
+          this.resetHintTimer();
         }
       }
 
@@ -2496,15 +3173,21 @@
         this.subtotalSteps.forEach(s => s.used = false);
         this.subtotalSteps = [];
         this.variableMap = {};
+        this.closestSolutionHint = null;
+        this.isPerfectPath = true;
+        this.bestAchievableDiff = null;
         this.hideAlert();
-        this.render();
+        this.resetHintTimer();
       }
 
       evaluateExpression() {
         if (this.expressionTokens.length === 0) return null;
 
+        // Strictly prevent evaluation of consecutive numbers or variables without operators (e.g. 'a 6' -> null)
         for (let i = 0; i < this.expressionTokens.length - 1; i++) {
-          if (this.expressionTokens[i].type === 'num' && this.expressionTokens[i + 1].type === 'num') {
+          const t1 = this.expressionTokens[i];
+          const t2 = this.expressionTokens[i + 1];
+          if ((t1.type === 'num' || t1.type === 'var') && (t2.type === 'num' || t2.type === 'var')) {
             return null;
           }
         }
@@ -2545,9 +3228,11 @@
         }
 
         for (let i = 0; i < this.expressionTokens.length - 1; i++) {
-          if (this.expressionTokens[i].type === 'num' && this.expressionTokens[i + 1].type === 'num') {
+          const t1 = this.expressionTokens[i];
+          const t2 = this.expressionTokens[i + 1];
+          if ((t1.type === 'num' || t1.type === 'var') && (t2.type === 'num' || t2.type === 'var')) {
             AudioFX.playError();
-            this.showAlert('สมการไม่ถูกต้อง: ต้องใส่เครื่องหมายคำนวณระหว่างตัวเลข (ไม่สามารถนำเลขมาวางติดกันได้)', 'danger');
+            this.showAlert('สมการไม่ถูกต้อง: ต้องใส่เครื่องหมายคำนวณระหว่างตัวเลข (ไม่สามารถนำเลขหรือตัวแปรมาวางติดกันได้)', 'danger');
             return;
           }
         }
@@ -2557,6 +3242,14 @@
           AudioFX.playError();
           this.showAlert('สมการไม่ถูกต้องตามหลักคณิตศาสตร์', 'danger');
           return;
+        }
+
+        // STOP SMART HINTS AFTER ANSWER IS CHECKED FOR THIS PUZZLE!
+        this.isAnswerChecked = true;
+        this.activeHintData = null;
+        if (this.hintTimer) {
+          clearTimeout(this.hintTimer);
+          this.hintTimer = null;
         }
 
         const elapsedSec = (Date.now() - this.puzzleStartTime) / 1000;
@@ -2570,12 +3263,17 @@
           pointsEarned = 100 + (this.streak * 20);
           this.streak += 1;
           this.solvedCount += 1;
+          this.closestSolutionHint = null;
           AudioFX.playSuccess();
           if (this.timerInterval) clearInterval(this.timerInterval);
         } else {
           const accuracy = Math.max(0, Math.round(100 - diff));
           baseDamage = accuracy;
           pointsEarned = accuracy;
+          
+          // Find single closest solution matching user prefix for hint display
+          this.closestSolutionHint = this.findClosestSolution();
+
           if (accuracy > 0) {
             AudioFX.playClick();
             this.solvedCount += 1;
@@ -2657,11 +3355,18 @@
             this.showAlert(`🎉 ปราบ BOSS LV.${this.bossLevel - 1} สำเร็จ! เลเวลอัปเป็น BOSS LV.${this.bossLevel} (HP ${this.bossMaxHp})`, 'success');
           }, 650);
         }
+
+        this.render();
       }
 
       revealSolutions() {
         AudioFX.playClick();
         this.isSolutionRevealed = true;
+        this.activeHintData = null;
+        if (this.hintTimer) {
+          clearTimeout(this.hintTimer);
+          this.hintTimer = null;
+        }
 
         const checkBtn = document.getElementById('checkBtn');
         if (checkBtn) {
@@ -2686,6 +3391,7 @@
         }
         this.solutionsCard.classList.add('show');
         this.showAlert(`เปิดดูเฉลยแล้ว! ปุ่มตรวจคำตอบถูกปิดใช้งานสำหรับข้อนี้ (กด "ข้อถัดไป" เพื่อเริ่มข้อใหม่)`, 'info');
+        this.render();
       }
 
       showAlert(msg, type) {
