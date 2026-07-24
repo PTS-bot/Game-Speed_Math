@@ -488,6 +488,19 @@
       border-color: #EF4444;
     }
 
+    /* PERFECT GREEN BADGE AT TOP-RIGHT CORNER OF EXPRESSION DISPLAY BOX */
+    .not-perfect-badge.perfect {
+      color: #166534;
+      background: #DCFCE7;
+      border: 1px solid #22C55E;
+    }
+
+    body.dark-mode .not-perfect-badge.perfect {
+      color: #4ADE80;
+      background: rgba(34, 197, 94, 0.25);
+      border-color: #22C55E;
+    }
+
     @keyframes severePulse {
       from { opacity: 0.8; }
       to { opacity: 1; }
@@ -1933,6 +1946,7 @@
         this.activeHintData = null;
         this.closestSolutionHint = null;
         this.isPerfectPath = true;
+        this.perfectWaysCount = null;
         this.bestAchievableDiff = null;
 
         // Puzzle Timer State
@@ -2199,30 +2213,13 @@
 
       /**
        * REAL-TIME PATH WARNING: Immediately checks if user is on perfect path
-       * and computes best achievable deviation. Updates badge without waiting 5s.
+       * and computes best achievable deviation + count of remaining 100% solution ways.
        */
       computePathWarning() {
         if (this.isSolutionRevealed || this.isAnswerChecked) return;
         if (!this.solutionsSet || this.solutionsSet.size === 0) return;
 
         const userTokens = this.expressionTokens;
-        const hasSubtotalVars = this.subtotalSteps.length > 0;
-
-        // If subtotal variables exist OR tokens are empty with used numbers, use mini-solver path
-        if (hasSubtotalVars) {
-          // In subtotal mode, original solutions don't apply → use mini-solver
-          this.isPerfectPath = false;
-          this._computeBestAchievableDiff();
-          return;
-        }
-
-        if (userTokens.length === 0) {
-          this.isPerfectPath = true;
-          this.bestAchievableDiff = 0;
-          return;
-        }
-
-        // Check if user tokens form an exact prefix match for any 100% solution
         const solutions = Array.from(this.solutionsSet);
         const parseSolution = (exprStr) => {
           const cleaned = MathSolver.cleanExpression(exprStr);
@@ -2235,28 +2232,43 @@
         };
 
         const parsedSolutions = solutions.map(s => parseSolution(s));
-        const matchingSols = parsedSolutions.filter(sol => {
-          if (sol.length < userTokens.length) return false;
-          for (let i = 0; i < userTokens.length; i++) {
-            const u = userTokens[i];
-            const s = sol[i];
-            let uVal = u.val;
-            if (u.type === 'var' && u.realVal !== undefined) uVal = u.realVal;
-            if (u.type === 'num' || u.type === 'var') {
-              if (s.type !== 'num' || s.val !== uVal) return false;
-            } else if (u.type === 'op') {
-              if (s.type !== 'op' || s.val !== u.val) return false;
+
+        // Filter matching pre-computed solution paths
+        let matchingSols = [];
+        if (userTokens.length === 0) {
+          matchingSols = parsedSolutions;
+        } else {
+          matchingSols = parsedSolutions.filter(sol => {
+            if (sol.length < userTokens.length) return false;
+            for (let i = 0; i < userTokens.length; i++) {
+              const u = userTokens[i];
+              const s = sol[i];
+              let uVal = u.val;
+              if (u.type === 'var' && u.realVal !== undefined) uVal = u.realVal;
+              if (u.type === 'num' || u.type === 'var') {
+                if (s.type !== 'num' || s.val !== uVal) return false;
+              } else if (u.type === 'op') {
+                if (s.type !== 'op' || s.val !== u.val) return false;
+              }
             }
-          }
-          return true;
-        });
+            return true;
+          });
+        }
+
+        // Always calculate mini-solver bestAchievableDiff to verify alternative 100% paths
+        this._computeBestAchievableDiff();
 
         if (matchingSols.length > 0) {
           this.isPerfectPath = true;
+          this.perfectWaysCount = matchingSols.length;
           this.bestAchievableDiff = 0;
+        } else if (this.bestAchievableDiff === 0) {
+          // Alternative path (e.g. subtotal variable or different operation order) that achieves 100% target!
+          this.isPerfectPath = true;
+          this.perfectWaysCount = 1;
         } else {
           this.isPerfectPath = false;
-          this._computeBestAchievableDiff();
+          this.perfectWaysCount = 0;
         }
       }
 
@@ -3012,11 +3024,11 @@
                   const hideIntermediate = this.hideIntermediateToggle && this.hideIntermediateToggle.checked;
                   if (isLastNumOrVar) {
                     btn.className = 'calc-btn calc-var-btn calc-num-paused';
-                    btn.innerHTML = hideIntermediate ? `${varItem.varName}` : `${varItem.varName} <sup class="calc-badge">${varItem.val}</sup>`;
+                    btn.innerHTML = hideIntermediate ? `${varItem.varName}` : `${varItem.varName} = ${varItem.val}`;
                     btn.title = "ต้องกดเครื่องหมายคำนวณก่อนกดตัวแปรถัดไป";
                   } else {
                     btn.className = `calc-btn calc-var-btn ${ghostVals.includes(varItem.val) ? 'calc-hint-highlight' : ''}`;
-                    btn.innerHTML = hideIntermediate ? `${varItem.varName}` : `${varItem.varName} <sup class="calc-badge">${varItem.val}</sup>`;
+                    btn.innerHTML = hideIntermediate ? `${varItem.varName}` : `${varItem.varName} = ${varItem.val}`;
                     btn.addEventListener('click', () => {
                       AudioFX.playClick();
                       varItem.used = true;
@@ -3147,17 +3159,21 @@
 
         const ghostTokens = (this.activeHintData && this.activeHintData.ghostTokens) ? this.activeHintData.ghostTokens : [];
 
-        // Render Not Perfect Badge (Two Levels) — controlled by warningModeToggle
+        // Render Badge (Green PERFECT vs Yellow NOT PERFECT vs Red SEVERE) — controlled by warningModeToggle
         const notPerfectBadgeEl = document.getElementById('notPerfectBadge');
         const warningEnabled = this.warningModeToggle && this.warningModeToggle.checked;
         const severeLimit = parseInt(this.warningThresholdInput ? this.warningThresholdInput.value : 100, 10) || 100;
         if (notPerfectBadgeEl) {
-          const showBadge = warningEnabled && this.isPerfectPath === false && !this.isSolutionRevealed && !this.isAnswerChecked
-            && (this.expressionTokens.length > 0 || this.subtotalSteps.length > 0);
+          const showBadge = warningEnabled && !this.isSolutionRevealed && !this.isAnswerChecked;
           if (showBadge) {
             notPerfectBadgeEl.style.display = 'inline-flex';
-            // Level 2: Severe warning when best achievable deviation >= severeLimit (user configurable for training)
-            if (this.bestAchievableDiff !== null && this.bestAchievableDiff >= severeLimit) {
+            if (this.isPerfectPath) {
+              // Level 0: Green PERFECT Badge with count of remaining solution ways
+              notPerfectBadgeEl.className = 'not-perfect-badge perfect';
+              const countStr = (this.perfectWaysCount && this.perfectWaysCount > 0) ? ` (${this.perfectWaysCount} แบบ)` : '';
+              notPerfectBadgeEl.textContent = `✅ PERFECT${countStr}`;
+            } else if (this.bestAchievableDiff !== null && this.bestAchievableDiff >= severeLimit) {
+              // Level 2: Severe warning when best achievable deviation >= severeLimit
               notPerfectBadgeEl.className = 'not-perfect-badge severe';
               notPerfectBadgeEl.textContent = `❌ ห่างเกิน ${severeLimit}`;
             } else {
