@@ -1554,6 +1554,12 @@
           </div>
           <div class="form-group">
             <label class="toggle-checkbox-label">
+              <input type="checkbox" id="autoCloseParenthesesToggle">
+              <span>โหมดปิดวงเล็บให้อัตโนมัติ (Auto-Close Parentheses — ไม่ต้องกดใส่วงเล็บปิดให้ครบ)</span>
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="toggle-checkbox-label">
               <input type="checkbox" id="subtotalModeToggle" checked>
               <span>โหมดคำนวณทีละขั้นด้วยปุ่ม = (Step-by-Step Subtotal Mode ในเครื่องคิดเลข)</span>
             </label>
@@ -1621,8 +1627,8 @@
 
         <h3>⏱️ 5. ระบบเติมตัวเลขและวงเล็บปิดอัตโนมัติ (Auto-Close & Timeout Auto-Submit)</h3>
         <ul>
-          <li><b>การปิดวงเล็บอัตโนมัติ:</b> ผู้เล่นไม่จำเป็นต้องกดใส่วงเล็บปิด <code>)</code> ให้ครบ ระบบจะเติมวงเล็บปิดท้ายให้อัตโนมัติเมื่อกดตรวจคำตอบหรือกด <code>=</code></li>
-          <li><b>ระบบส่งคำตอบอัตโนมัติเมื่อหมดเวลา:</b> หากหมดเวลาแล้วยังมีตัวเลขที่ไม่ได้ใช้ ระบบจะเติมตัวเลขที่เหลือจากน้อยไปมากให้อัตโนมัติ (หากค้างเครื่องหมายไว้จะเติมเลขทันที หากค้างตัวเลขไว้จะเติม <code>+</code> แล้วตามด้วยตัวเลข) และปิดวงเล็บส่งคำตอบให้อัตโนมัติทันที</li>
+          <li><b>การปิดวงเล็บอัตโนมัติ:</b> เริ่มต้นผู้เล่นต้องใส่วงเล็บปิด <code>)</code> ให้ถูกต้องครบคู่ (สามารถเปิดตั้งค่า "โหมดปิดวงเล็บให้อัตโนมัติ" เพิ่มเติมได้)</li>
+          <li><b>ระบบส่งคำตอบอัตโนมัติเมื่อหมดเวลา:</b> หากหมดเวลาแล้วยังมีตัวเลขที่ไม่ได้ใช้ ระบบจะเติมตัวเลขที่เหลือจากน้อยไปมากให้อัตโนมัติ และปิดวงเล็บส่งคำตอบให้อัตโนมัติทันที</li>
         </ul>
       </div>
     </div>
@@ -1990,6 +1996,7 @@
         this.autoNextToggle = document.getElementById('autoNextToggle');
         this.uniqueNumbersToggle = document.getElementById('uniqueNumbersToggle');
         this.hideIntermediateToggle = document.getElementById('hideIntermediateToggle');
+        this.autoCloseParenthesesToggle = document.getElementById('autoCloseParenthesesToggle');
         this.subtotalModeToggle = document.getElementById('subtotalModeToggle');
         this.hintModeToggle = document.getElementById('hintModeToggle');
         this.warningModeToggle = document.getElementById('warningModeToggle');
@@ -2960,29 +2967,27 @@
         if (!grid) return;
         grid.innerHTML = '';
 
-        const unusedGiven = this.givenNumbers.filter(n => !n.used);
-        const unusedVals = unusedGiven.map(n => n.val).sort((a, b) => a - b);
         const activeVars = this.subtotalSteps.filter(step => !step.used);
+        const totalItems = this.givenNumbers.length + activeVars.length;
 
-        // Build 9 slots (0 to 8)
+        // Build 9 slots (0 to 8) with FIXED STABLE POSITIONS throughout the puzzle!
         const numSlots = [];
 
-        if (unusedVals.length + activeVars.length <= 9) {
-          // Spread each unused given number and each active variable to its own dedicated slot!
-          unusedGiven.forEach(n => {
-            numSlots.push({ type: 'num', val: n.val, count: 1, active: true, id: n.id });
+        if (totalItems <= 9) {
+          // Fixed 1-to-1 slot mapping for each given number & active subtotal variable (NO POSITION SHIFTING!)
+          this.givenNumbers.forEach(n => {
+            numSlots.push({ type: 'num', val: n.val, used: n.used, active: true, id: n.id });
           });
           activeVars.forEach(v => {
             numSlots.push({ type: 'var', varName: v.varName, val: v.val, active: true, varObj: v });
           });
         } else {
-          // Total items exceed 9 -> group numbers by value first
-          const sortedUniqueVals = Array.from(new Set(unusedVals)).sort((a, b) => a - b);
-          const numberCounts = {};
-          unusedVals.forEach(v => numberCounts[v] = (numberCounts[v] || 0) + 1);
-
-          sortedUniqueVals.forEach(v => {
-            numSlots.push({ type: 'num', val: v, count: numberCounts[v], active: true });
+          // Exceeds 9 slots -> group numbers by value into fixed value slots
+          const uniqueVals = Array.from(new Set(this.givenNumbers.map(n => n.val))).sort((a, b) => a - b);
+          uniqueVals.forEach(v => {
+            const totalCount = this.givenNumbers.filter(n => n.val === v).length;
+            const remainingCount = this.givenNumbers.filter(n => n.val === v && !n.used).length;
+            numSlots.push({ type: 'numGroup', val: v, count: remainingCount, totalCount: totalCount, active: true });
           });
           activeVars.forEach(v => {
             numSlots.push({ type: 'var', varName: v.varName, val: v.val, active: true, varObj: v });
@@ -2991,7 +2996,7 @@
 
         // Fill remaining slots up to 9 with empty slots
         while (numSlots.length < 9) {
-          numSlots.push({ type: 'empty', val: '-', count: 0, active: false });
+          numSlots.push({ type: 'empty', val: '-', active: false });
         }
 
         // 4x5 Keypad layout grid matrix
@@ -3017,8 +3022,31 @@
               if (slot && slot.active) {
                 if (slot.type === 'num') {
                   const numVal = slot.val;
+                  if (!slot.used) {
+                    if (isLastNumOrVar) {
+                      btn.className = `calc-btn calc-num-btn calc-num-paused`;
+                      btn.innerHTML = `${numVal}`;
+                      btn.title = "ต้องกดเครื่องหมายคำนวณก่อนกดตัวเลขถัดไป";
+                    } else {
+                      btn.className = `calc-btn calc-num-btn calc-num-available ${ghostVals.includes(numVal) ? 'calc-hint-highlight' : ''}`;
+                      btn.innerHTML = `${numVal}`;
+                      btn.addEventListener('click', () => {
+                        AudioFX.playClick();
+                        const targetItem = this.givenNumbers.find(n => n.id === slot.id);
+                        if (targetItem && !targetItem.used) {
+                          targetItem.used = true;
+                          this.pushToken({ type: 'num', val: numVal, id: targetItem.id });
+                        }
+                      });
+                    }
+                  } else {
+                    // Already used -> Disabled in its FIXED SLOT POSITION!
+                    btn.className = 'calc-btn calc-num-btn calc-num-disabled';
+                    btn.innerHTML = `${numVal}`;
+                  }
+                } else if (slot.type === 'numGroup') {
+                  const numVal = slot.val;
                   const count = slot.count;
-
                   if (count > 0) {
                     if (isLastNumOrVar) {
                       btn.className = `calc-btn calc-num-btn calc-num-paused`;
@@ -3031,13 +3059,7 @@
                       if (count > 1) btn.innerHTML += `<sup class="calc-badge">${count}</sup>`;
                       btn.addEventListener('click', () => {
                         AudioFX.playClick();
-                        let unusedItem = null;
-                        if (slot.id) {
-                          unusedItem = this.givenNumbers.find(n => n.id === slot.id && !n.used);
-                        }
-                        if (!unusedItem) {
-                          unusedItem = this.givenNumbers.find(n => !n.used && n.val === numVal);
-                        }
+                        const unusedItem = this.givenNumbers.find(n => !n.used && n.val === numVal);
                         if (unusedItem) {
                           unusedItem.used = true;
                           this.pushToken({ type: 'num', val: numVal, id: unusedItem.id });
@@ -3119,7 +3141,21 @@
 
         if (this.expressionTokens.length === 0) return;
 
-        // Auto-close missing parentheses before performing subtotal
+        let openCount = 0;
+        let closeCount = 0;
+        this.expressionTokens.forEach(t => {
+          if (t.val === '(') openCount++;
+          if (t.val === ')') closeCount++;
+        });
+
+        const isAutoCloseEnabled = this.autoCloseParenthesesToggle && this.autoCloseParenthesesToggle.checked;
+        if (!isAutoCloseEnabled && openCount !== closeCount) {
+          AudioFX.playError();
+          this.showAlert('สมการไม่ถูกต้อง: วงเล็บเปิด ( และวงเล็บปิด ) ไม่เท่ากัน (ต้องใส่วงเล็บปิดให้ครบถ้วน)', 'danger');
+          return;
+        }
+
+        // Auto-close missing parentheses before performing subtotal if enabled
         this.autoCloseParenthesesInTokens();
 
         const val = this.evaluateExpression();
@@ -3521,7 +3557,21 @@
           return;
         }
 
-        // Auto-close missing parentheses before checking answer
+        let openCount = 0;
+        let closeCount = 0;
+        this.expressionTokens.forEach(t => {
+          if (t.val === '(') openCount++;
+          if (t.val === ')') closeCount++;
+        });
+
+        const isAutoCloseEnabled = this.autoCloseParenthesesToggle && this.autoCloseParenthesesToggle.checked;
+        if (!isAutoCloseEnabled && openCount !== closeCount) {
+          AudioFX.playError();
+          this.showAlert('สมการไม่ถูกต้อง: วงเล็บเปิด ( และวงเล็บปิด ) ไม่เท่ากัน (ต้องใส่วงเล็บปิดให้ครบถ้วน)', 'danger');
+          return;
+        }
+
+        // Auto-close missing parentheses before checking answer if enabled
         this.autoCloseParenthesesInTokens();
 
         const unused = this.givenNumbers.filter(n => !n.used);
