@@ -3439,7 +3439,7 @@
       handleTimeoutAutoSubmit() {
         if (this.isAnswerChecked || this.isSolutionRevealed) return;
 
-        // Step 1: Fill all unused given numbers
+        // Step 1: Fill all unused given numbers safely
         const unused = this.givenNumbers.filter(n => !n.used);
         if (unused.length > 0) {
           unused.sort((a, b) => a.val - b.val);
@@ -3447,12 +3447,15 @@
           for (const item of unused) {
             item.used = true;
             const lastToken = this.expressionTokens.length > 0 ? this.expressionTokens[this.expressionTokens.length - 1] : null;
-            const isLastOp = lastToken && lastToken.type === 'op' && lastToken.val !== ')';
 
-            if (this.expressionTokens.length === 0 || isLastOp) {
+            if (!lastToken) {
+              this.expressionTokens.push({ type: 'num', val: item.val, id: item.id });
+            } else if (lastToken.type === 'op' && lastToken.val !== ')') {
               this.expressionTokens.push({ type: 'num', val: item.val, id: item.id });
             } else {
-              this.expressionTokens.push({ type: 'op', val: '+' });
+              if (lastToken.val !== '+') {
+                this.expressionTokens.push({ type: 'op', val: '+' });
+              }
               this.expressionTokens.push({ type: 'num', val: item.val, id: item.id });
             }
           }
@@ -3461,13 +3464,8 @@
         // Step 2: Auto-close any missing closing parentheses
         this.autoCloseParenthesesInTokens();
 
-        // Step 3: Render updated expression UI
-        this.render();
-
-        // Step 4: Automatically check answer
-        if (this.expressionTokens.length > 0) {
-          this.checkAnswer();
-        }
+        // Step 3: Process evaluation once
+        this.processAnswerEvaluation();
       }
 
       evaluateExpression() {
@@ -3511,6 +3509,12 @@
       }
 
       checkAnswer() {
+        if (this.isAnswerChecked) {
+          AudioFX.playError();
+          this.showAlert('คุณส่งคำตอบในข้อนี้ไปแล้ว ไม่สามารถกดส่งซ้ำได้ (กด "ข้อถัดไป" เพื่อสู้ต่อ)', 'warning');
+          return;
+        }
+
         if (this.isSolutionRevealed) {
           AudioFX.playError();
           this.showAlert('คุณเปิดดูเฉลยแล้ว ไม่สามารถกดตรวจคำตอบเพื่อโจมตี Boss ในข้อนี้ได้ (กด "ข้อถัดไป" เพื่อสู้ต่อ)', 'danger');
@@ -3535,6 +3539,31 @@
             this.showAlert('สมการไม่ถูกต้อง: ต้องใส่เครื่องหมายคำนวณระหว่างตัวเลข (ไม่สามารถนำเลขหรือตัวแปรมาวางติดกันได้)', 'danger');
             return;
           }
+        }
+
+        this.processAnswerEvaluation();
+      }
+
+      processAnswerEvaluation() {
+        // Mark answer as checked & disable Check Answer button to prevent duplicate submissions
+        this.isAnswerChecked = true;
+        this.activeHintData = null;
+
+        if (this.hintTimer) {
+          clearTimeout(this.hintTimer);
+          this.hintTimer = null;
+        }
+        if (this.timerInterval) {
+          clearInterval(this.timerInterval);
+          this.timerInterval = null;
+        }
+
+        const checkBtn = document.getElementById('checkBtn');
+        if (checkBtn) {
+          checkBtn.disabled = true;
+          checkBtn.style.opacity = '0.5';
+          checkBtn.style.cursor = 'not-allowed';
+          checkBtn.style.pointerEvents = 'none';
         }
 
         const res = this.evaluateExpression();
